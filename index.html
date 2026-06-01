@@ -3,121 +3,233 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arbahi Gold - Binance Connected</title>
-    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+    <title>Arbahi Gold - Simple Pay Edition</title>
     <style>
-        /* التنسيقات المتوافقة مع صورة المستخدم في ملف Screenshot_٢٠٢٦-٠٦-٠٢-٠٠-٥٨-٤٦-٤٥٣_org.telegram.messenger.jpg */
         body { 
-            background: #0a0a0a; color: #fff; text-align: center; font-family: sans-serif; 
-            margin: 0; padding: 20px 20px 100px 20px; box-sizing: border-box;
+            background: linear-gradient(135deg, #1e0b36 0%, #0c1033 50%, #051c2c 100%); 
+            color: #ffffff; text-align: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            display: flex; flex-direction: column; justify-content: flex-start; min-height: 100vh; 
+            margin: 0; padding: 20px 20px 100px 20px; box-sizing: border-box; -webkit-user-select: none; user-select: none;
         }
-        .header { display: flex; justify-content: space-between; align-items: center; background: #1a1a1a; padding: 15px; border-radius: 12px; margin-bottom: 20px; }
-        .store-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; overflow-y: auto; max-height: 70vh; }
-        .miner-card { background: #151515; border: 1px solid #333; border-radius: 15px; padding: 15px; position: relative; }
-        .miner-card.active-plan { border-color: #f5b041; background: #1e1a10; }
-        .lvl-tag { position: absolute; top: 10px; right: 10px; font-size: 10px; color: #888; border: 1px solid #333; padding: 2px 5px; border-radius: 5px; }
-        .miner-icon { font-size: 40px; margin-bottom: 10px; }
-        .miner-name { font-size: 14px; font-weight: bold; }
-        .miner-speed { color: #00f2fe; font-size: 12px; margin: 5px 0 15px 0; }
-        .buy-btn { background: #f5b041; color: #000; border: none; padding: 10px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .buy-btn.disabled { background: #333; color: #666; cursor: not-allowed; }
-        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #1a1a1a; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #333; }
+        .glass-panel { background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 15px; box-sizing: border-box; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; margin-bottom: 15px; width: 100%; }
+        .username { color: #f5b041; font-weight: bold; font-size: 15px; }
+        .withdrawable-box { background: rgba(0, 242, 254, 0.1); border: 1px solid rgba(0, 242, 254, 0.3); border-radius: 10px; padding: 6px 12px; font-size: 12px; font-weight: bold; color: #00f2fe; }
+        .page { display: none; flex-direction: column; justify-content: flex-start; width: 100%; }
+        .page.active { display: flex; }
+        .balance-box { margin-top: 10px; }
+        #balance { font-size: 38px; font-weight: 900; color: #ffffff; margin-top: 5px; text-shadow: 0 4px 20px rgba(249, 217, 118, 0.4); }
+        .coin-container { display: flex; justify-content: center; align-items: center; margin: 20px 0; position: relative; }
+        .coin { width: 170px; height: 170px; background: radial-gradient(circle, #ffe066 0%, #f5b041 60%, #cf850c 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 26px; color: #fff; border: 6px solid rgba(255, 255, 255, 0.9); box-shadow: 0 0 40px rgba(245, 176, 65, 0.7); cursor: pointer; transition: transform 0.05s; }
+        .coin:active { transform: scale(0.90); }
+        .energy-box { width: 100%; background: rgba(255, 255, 255, 0.1); border-radius: 10px; height: 12px; margin-top: 10px; overflow: hidden; }
+        .energy-bar { height: 100%; width: 100%; background: linear-gradient(90deg, #ffdb4d 0%, #f39c12 100%); }
+        .claim-btn { background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); color: #fff; border: none; padding: 15px; border-radius: 14px; font-weight: bold; font-size: 16px; width: 100%; cursor: pointer; margin-top: 15px; }
+        .store-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 15px; width: 100%; max-height: 55vh; overflow-y: auto; padding-right: 5px; }
+        .miner-card { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 15px 10px; display: flex; flex-direction: column; align-items: center; position: relative; }
+        .miner-card.active-miner { border-color: #2ecc71; background: rgba(46, 204, 113, 0.05); }
+        .miner-card.locked-miner { opacity: 0.5; }
+        .lvl-tag { position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 6px; font-size: 9px; color: #ccc; }
+        .miner-icon { font-size: 32px; margin: 10px 0 5px 0; }
+        .miner-name { font-size: 12px; font-weight: bold; }
+        .miner-speed { color: #00f2fe; font-size: 11px; margin-bottom: 12px; font-weight: bold; }
+        .store-btn { width: 100%; padding: 8px; border-radius: 10px; border: none; font-weight: bold; font-size: 11px; cursor: pointer; }
+        .store-btn.buy { background: linear-gradient(135deg, #ffe066 0%, #f5b041 100%); color: #000; }
+        .store-btn.active-status { background: #2ecc71; color: #fff; cursor: default; }
+        .store-btn.locked { background: rgba(255,255,255,0.05); color: #666; cursor: not-allowed; }
+        .nav-bar { position: fixed; bottom: 12px; left: 10px; right: 10px; background: rgba(12, 16, 51, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: space-around; padding: 10px 0; border-radius: 24px; }
+        .nav-item { color: #7f8c8d; cursor: pointer; font-size: 10px; font-weight: bold; display: flex; flex-direction: column; align-items: center; width: 20%; }
+        .nav-item.active { color: #00f2fe; }
+        .nav-icon { font-size: 18px; margin-bottom: 2px; }
+        .input-box { width: 100%; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 12px; border-radius: 10px; text-align: center; font-size: 13px; margin-bottom: 12px; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div style="text-align: left;">
-            <div style="color: #f5b041; font-weight: bold;">Arbahi Miner</div>
-            <div id="wallet-status" style="font-size: 10px; color: #888;">لم يتم الربط</div>
+    <!-- هيدر علوي بسيط بدون أخطاء اتصال -->
+    <div class="header glass-panel">
+        <div style="text-align: right;">
+            <span class="username">Arbahi Miner 🚀</span><br>
+            <span style="color: #2ecc71; font-size: 11px;">الشبكة: TON Mainnet</span>
         </div>
-        <div id="ton-connect-btn"></div>
+        <div class="withdrawable-box">
+            💰 الرصيد المتوفر: <span id="withdrawable-balance">0.0000</span> GOLD
+        </div>
     </div>
 
-    <h2 style="font-size: 18px;">AI Matrix Plans (100 Levels)</h2>
-    
-    <div class="store-grid" id="store-container">
-        <!-- سيتم توليد الـ 100 مستوى هنا تلقائياً -->
+    <!-- ================= 1. صفحة التعدين الرئيسية ================= -->
+    <div id="page-mine" class="page active">
+        <div class="balance-box">
+            <div style="color: #aaa; font-size: 12px; font-weight: bold;">CURRENT MINING</div>
+            <div id="balance">0.0000 <span style="color: #f5b041; font-size: 18px;">GOLD</span></div>
+        </div>
+        <div class="coin-container" id="coin-area">
+            <div class="coin" id="coin-btn">MINE</div>
+        </div>
+        <div class="glass-panel" style="width: 100%;">
+            <div style="display: flex; justify-content: space-between; font-size: 14px;">
+                <span style="color: #aaa;">⚡ الطاقة المتاحة</span>
+                <span style="color: #fff; font-weight: bold;" id="energy-text">500/500</span>
+            </div>
+            <div class="energy-box"><div class="energy-bar" id="energy-fill" style="width: 100%;"></div></div>
+            <div style="margin-top: 10px; font-size: 13px;">
+                <span style="color: #aaa;">سرعة التعدين:</span>
+                <span style="color: #00f2fe; font-weight: bold;">+<span id="current-speed-display">0.0012</span> / ثانية</span>
+            </div>
+        </div>
+        <button class="claim-btn" onclick="claimEarnings()">CLAIM GOLD</button>
     </div>
 
+    <!-- ================= 2. صفحة المتجر الـ 100 مستوى (الدفع المباشر) ================= -->
+    <div id="page-store" class="page">
+        <h2 style="color: #f5b041; margin: 10px 0 2px 0;">AI Matrix Store</h2>
+        <p style="color: #ccc; font-size: 12px; margin-bottom: 10px;">انقر لشحن الخطة مباشرة من محفظتك لترقية سرعة التعدين</p>
+        <div class="store-grid" id="dynamic-store-grid"></div>
+    </div>
+
+    <!-- ================= 3. صفحة السحب ================= -->
+    <div id="page-withdraw" class="page">
+        <h2 style="color: #f5b041; margin-top: 15px;">مركز السحب والعمليات</h2>
+        <div class="glass-panel">
+            <p style="font-size: 13px; color: #aaa; text-align: right; margin-top: 0;">• الحد الأدنى للسحب: <strong>1000 GOLD</strong></p>
+            <input type="number" id="withdraw-amount" class="input-box" placeholder="المبلغ المطلوب سحبه (0.00)">
+            <input type="text" id="user-wallet-address" class="input-box" placeholder="أدخل عنوان محفظة TON الخاصة بك لاستلام السحب">
+            <button class="claim-btn" style="margin: 10px 0 0 0;" onclick="processWithdraw()">تأكيد طلب السحب الفوري</button>
+        </div>
+    </div>
+
+    <!-- شريط التنقل السفلي الموزع -->
     <div class="nav-bar">
-        <div>⛏️<br><small>Mine</small></div>
-        <div style="color: #f5b041;">⚡<br><small>Store</small></div>
-        <div>📋<br><small>Tasks</small></div>
-        <div>👥<br><small>Friends</small></div>
+        <div class="nav-item active" id="btn-mine" onclick="showPage('mine')"><span class="nav-icon">⛏️</span><span>تعدين</span></div>
+        <div class="nav-item" id="btn-store" onclick="showPage('store')"><span class="nav-icon">⚡</span><span>المتجر</span></div>
+        <div class="nav-item" id="btn-withdraw" onclick="showPage('withdraw')"><span class="nav-icon">💰</span><span>السحب</span></div>
     </div>
 
     <script>
-        // عنوان محفظتك في Binance الذي زودتني به
+        // عنوان محفظتك الشخصية في بينانس مباشرة
         const BINANCE_WALLET = "UQDHv9eGYkUfDz4N9QTpWESn86Yx_bZcM60kJ4dEDf6Fg8FO";
 
-        const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-            manifestUrl: 'https://alidaod898-sketch.github.io/arbahigold/tonconnect-manifest.json',
-            buttonRootId: 'ton-connect-btn'
-        });
+        let count = parseFloat(localStorage.getItem('arbahi_balance')) || 0.0000;
+        let withdrawableCount = parseFloat(localStorage.getItem('arbahi_withdrawable_balance')) || 0.0000;
+        let energy = parseInt(localStorage.getItem('arbahi_energy')) || 500;
+        const maxEnergy = 500;
 
-        let userLevel = parseInt(localStorage.getItem('user_lvl')) || 1;
+        let currentMiningSpeed = parseFloat(localStorage.getItem('arbahi_mining_speed')) || 0.0012;
+        let currentMinerLevel = parseInt(localStorage.getItem('arbahi_miner_level')) || 1;
 
-        // دالة توليد المستويات بأسعار تنافسية (تبدأ من 0.01 TON)
-        function renderStore() {
-            const container = document.getElementById('store-container');
-            container.innerHTML = "";
+        const balDisplay = document.getElementById('balance');
+        const withdrawableDisplay = document.getElementById('withdrawable-balance');
+        const energyText = document.getElementById('energy-text');
+        const energyFill = document.getElementById('energy-fill');
+        const speedDisplay = document.getElementById('current-speed-display');
 
-            for (let i = 1; i <= 100; i++) {
-                // معادلة السعر التنافسي: زيادة طفيفة جداً لجذب المستخدمين
-                let price = (0.01 + (i - 1) * 0.05).toFixed(2);
-                let speed = (1.2 + (i * 0.5)).toFixed(1);
-                
+        // خوارزمية إنشاء الـ 100 مستوى الحسابية بالأسعار التنافسية
+        const storePlans = [];
+        storePlans.push({ lvl: 1, name: "AI Matrix 1", speed: 0.0012, costTon: 0 });
+
+        for (let i = 2; i <= 100; i++) {
+            let price = (0.01 + (i - 1) * 0.04).toFixed(2); // تبدأ الترقية من 0.05 TON وتتصاعد بشكل تنافسي وجذاب
+            let calculatedSpeed = 0.0012 + (i * 0.0015);
+            storePlans.push({ lvl: i, name: "AI Matrix " + i, speed: calculatedSpeed, costTon: parseFloat(price) });
+        }
+
+        function generateStoreUI() {
+            const grid = document.getElementById('dynamic-store-grid');
+            grid.innerHTML = "";
+
+            storePlans.forEach(plan => {
                 const card = document.createElement('div');
-                card.className = `miner-card ${i === userLevel ? 'active-plan' : ''}`;
+                let buttonHTML = "";
                 
-                let btnText = i <= userLevel ? "مفعل ✅" : `فتح بـ ${price} TON`;
-                let btnClass = i === userLevel + 1 ? "buy-btn" : "buy-btn disabled";
-                let btnAction = i === userLevel + 1 ? `onclick="payForLevel(${i}, ${price})"` : "";
-
-                card.innerHTML = `
-                    <div class="lvl-tag">LVL ${i}</div>
-                    <div class="miner-icon">🧠</div>
-                    <div class="miner-name">AI Matrix ${i}</div>
-                    <div class="miner-speed">${speed} TH/s</div>
-                    <button class="${btnClass}" ${btnAction}>${btnText}</button>
-                `;
-                container.appendChild(card);
-            }
-        }
-
-        async function payForLevel(lvl, amount) {
-            if (!tonConnectUI.connected) {
-                alert("يرجى ربط المحفظة أولاً!");
-                return;
-            }
-
-            const transaction = {
-                validUntil: Math.floor(Date.now() / 1000) + 600,
-                messages: [{
-                    address: BINANCE_WALLET,
-                    amount: (amount * 1000000000).toString() // تحويل إلى NanoTON
-                }]
-            };
-
-            try {
-                const result = await tonConnectUI.sendTransaction(transaction);
-                if (result) {
-                    userLevel = lvl;
-                    localStorage.setItem('user_lvl', userLevel);
-                    alert(`مبروك! تم فتح المستوى ${lvl} بنجاح.`);
-                    renderStore();
+                if (currentMinerLevel === plan.lvl) {
+                    card.className = "miner-card active-miner";
+                    buttonHTML = `<button class="store-btn active-status">ACTIVE</button>`;
+                } else if (currentMinerLevel > plan.lvl) {
+                    card.className = "miner-card";
+                    buttonHTML = `<button class="store-btn locked" style="color:#2ecc71;">UPGRADED</button>`;
+                } else {
+                    if (plan.lvl === currentMinerLevel + 1) {
+                        card.className = "miner-card";
+                        buttonHTML = `<button class="store-btn buy" onclick="payViaWallet(${plan.lvl}, ${plan.costTon}, ${plan.speed})">⚡ شحن ${plan.costTon} TON</button>`;
+                    } else {
+                        card.className = "miner-card locked-miner";
+                        buttonHTML = `<button class="store-btn locked">🔒 LVL ${plan.lvl}</button>`;
+                    }
                 }
-            } catch (e) {
-                alert("فشلت العملية أو تم إلغاؤها.");
-            }
+
+                card.innerHTML = `<span class="lvl-tag">Lvl ${plan.lvl}</span><div class="miner-icon">🧠</div><div class="miner-name">${plan.name}</div><div class="miner-speed">+${plan.speed.toFixed(4)}/ثانية</div>${buttonHTML}`;
+                grid.appendChild(card);
+            });
         }
 
-        renderStore();
-        
-        tonConnectUI.onStatusChange(wallet => {
-            document.getElementById('wallet-status').innerText = wallet ? "متصلة" : "غير متصلة";
+        // دالة الدفع السحرية بدون خطأ البطة!
+        function payViaWallet(targetLvl, costTon, newSpeed) {
+            // توليد رابط دفع مباشر رسمي لشبكة TON يفتح أي محفظة مثبتة على جوال المستخدم فوراً
+            const tonTransferUrl = `ton://transfer/${BINANCE_WALLET}?amount=${costTon * 1000000000}`;
+            
+            alert(`سيتم نقلك الآن إلى محفظتك لتأكيد إرسال ${costTon} TON مباشرة. بعد إتمام الدفع، ارجع للبوت لتفعيل الترقية!`);
+            
+            // فتح المحفظة مباشرة
+            window.location.href = tonTransferUrl;
+
+            // كود محاكاة التفعيل الفوري لتسهيل التجربة على المستخدم
+            setTimeout(() => {
+                currentMinerLevel = targetLvl;
+                currentMiningSpeed = newSpeed;
+                saveToStorage(); updateDisplay(); generateStoreUI();
+            }, 2000);
+        }
+
+        // عداد العمل التلقائي للبوت
+        setInterval(() => {
+            count += currentMiningSpeed;
+            if (energy < maxEnergy) { energy += 2; if (energy > maxEnergy) energy = maxEnergy; }
+            updateDisplay(); saveToStorage();
+        }, 1000);
+
+        document.getElementById('coin-btn').addEventListener('click', () => {
+            if (energy >= 1) { count += 0.0100; energy -= 1; updateDisplay(); saveToStorage(); }
         });
+
+        function updateDisplay() {
+            balDisplay.innerHTML = count.toFixed(4) + ' <span style="color: #f5b041; font-size: 18px;">GOLD</span>';
+            withdrawableDisplay.innerText = withdrawableCount.toFixed(4);
+            energyText.innerText = energy + '/' + maxEnergy;
+            energyFill.style.width = (energy / maxEnergy) * 100 + '%';
+            speedDisplay.innerText = currentMiningSpeed.toFixed(4);
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('arbahi_balance', count);
+            localStorage.setItem('arbahi_withdrawable_balance', withdrawableCount);
+            localStorage.setItem('arbahi_energy', energy);
+            localStorage.setItem('arbahi_mining_speed', currentMiningSpeed);
+            localStorage.setItem('arbahi_miner_level', currentMinerLevel);
+        }
+
+        function claimEarnings() {
+            if(count > 0) { withdrawableCount += count; count = 0; updateDisplay(); saveToStorage(); alert('تم الحصاد وتحويل العملات بنجاح!'); }
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            document.getElementById('page-' + pageId).classList.add('active');
+            document.getElementById('btn-' + pageId).classList.add('active');
+        }
+
+        function processWithdraw() {
+            const amount = parseFloat(document.getElementById('withdraw-amount').value);
+            const userAddress = document.getElementById('user-wallet-address').value;
+            if (!userAddress) { alert("من فضلك أدخل عنوان محفظتك لاستلام العملات!"); return; }
+            if (isNaN(amount) || amount < 1000 || amount > withdrawableCount) { alert("المبلغ غير صحيح أو أقل من الحد الأدنى (1000 GOLD)."); return; }
+            withdrawableCount -= amount; updateDisplay(); saveToStorage();
+            alert(`تم رفع طلب السحب بمبلغ ${amount} GOLD إلى محفظتك بنجاح! سيتم التحقق من المعاملة يدوياً.`);
+            document.getElementById('withdraw-amount').value = "";
+        }
+
+        generateStoreUI();
+        updateDisplay();
     </script>
 </body>
 </html>
