@@ -3,348 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arbahi Gold</title>
+    <title>Arbahi Gold - Web3 Edition</title>
+    <!-- استدعاء مكتبة ربط المحفظة الرسمية من تليجرام -->
+    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
+        /* التنسيقات السابقة مع إضافة لمسات الويب 3 */
         body { 
             background: radial-gradient(circle, #121212 0%, #050505 100%); 
-            color: #ffffff; 
-            text-align: center; 
-            font-family: sans-serif; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: space-between; 
-            height: 100vh; 
-            margin: 0; 
-            padding: 20px 20px 80px 20px; 
-            box-sizing: border-box;
-            -webkit-user-select: none;
-            user-select: none;
-            overflow: hidden;
+            color: #ffffff; text-align: center; font-family: sans-serif; 
+            display: flex; flex-direction: column; height: 100vh; margin: 0; padding: 20px 20px 80px 20px; box-sizing: border-box; overflow: hidden;
         }
-        .header { display: flex; justify-content: space-between; padding-bottom: 15px; border-bottom: 1px solid rgba(212, 175, 55, 0.2); }
-        .username { color: #d4af37; font-weight: bold; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid rgba(212, 175, 55, 0.2); }
         
-        .page { display: none; flex-direction: column; justify-content: flex-start; height: 100%; width: 100%; overflow-y: auto; }
+        /* زر ربط المحفظة */
+        #ton-connect-btn { scale: 0.8; transform-origin: right; }
+
+        .page { display: none; flex-direction: column; height: 100%; width: 100%; overflow-y: auto; }
         .page.active { display: flex; }
 
-        .balance-box { margin-top: 20px; }
-        #balance { font-size: 40px; font-weight: bold; color: #fff; margin-top: 10px; }
+        #balance { font-size: 35px; font-weight: bold; color: #fff; margin-top: 10px; text-shadow: 0 0 10px rgba(212, 175, 55, 0.5); }
         
-        .coin-container { display: flex; justify-content: center; align-items: center; margin: 30px 0; position: relative; }
-        .coin { 
-            width: 180px; 
-            height: 180px; 
-            background: radial-gradient(circle, #f9d976 0%, #e9b646 70%, #9a741b 100%); 
-            border-radius: 50%; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-weight: bold; 
-            font-size: 24px; 
-            color: #332400; 
-            border: 5px solid #fff; 
-            box-shadow: 0 0 30px rgba(212, 175, 55, 0.6); 
-            cursor: pointer;
-            transition: transform 0.05s;
-            position: relative;
-            z-index: 2;
+        .coin-btn { 
+            width: 160px; height: 160px; background: radial-gradient(circle, #f9d976 0%, #e9b646 70%); 
+            border-radius: 50%; margin: 20px auto; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 22px; color: #332400; border: 4px solid #fff; cursor: pointer; transition: 0.1s;
         }
-        .coin:active { transform: scale(0.92); }
+        .coin-btn:active { transform: scale(0.95); }
+
+        .withdraw-card {
+            background: rgba(255, 255, 255, 0.05); border: 1px solid #d4af37; border-radius: 15px;
+            padding: 20px; margin-top: 20px; text-align: right;
+        }
+        .input-box {
+            width: 100%; background: #000; border: 1px solid #333; color: #d4af37;
+            padding: 12px; border-radius: 8px; margin: 10px 0; box-sizing: border-box;
+        }
         
-        .energy-box { width: 100%; background: rgba(255, 255, 255, 0.1); border-radius: 10px; height: 12px; margin-top: 10px; overflow: hidden; }
-        .energy-bar { height: 100%; width: 100%; background: linear-gradient(90deg, #f9d976 0%, #e9b646 100%); transition: width 0.1s ease; }
-        .claim-btn { background: linear-gradient(90deg, #d4af37 0%, #f9d976 100%); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 18px; width: 100%; cursor: pointer; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3); margin-top: 15px; }
-
-        /* أسلوب قائمة المهام */
-        .tasks-container { margin-top: 20px; text-align: right; width: 100%; }
-        .task-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(212, 175, 55, 0.1);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .task-info h4 { margin: 0 0 5px 0; color: #fff; font-size: 16px; }
-        .task-info p { margin: 0; color: #d4af37; font-size: 13px; font-weight: bold; }
-        .task-btn {
-            background: #d4af37;
-            color: #000;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 13px;
-            cursor: pointer;
-        }
-        .task-btn.done { background: #333; color: #888; cursor: default; }
-
-        /* أسلوب صفحة الأصدقاء الجديد */
-        .invite-box {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px dashed rgba(212, 175, 55, 0.3);
-            border-radius: 12px;
-            padding: 15px;
-            margin: 20px 0;
-            text-align: center;
-        }
-        .ref-link-input {
-            width: 100%;
-            background: #000;
-            border: 1px solid #333;
-            color: #d4af37;
-            padding: 10px;
-            border-radius: 8px;
-            text-align: center;
-            font-size: 12px;
-            margin-bottom: 10px;
-            box-sizing: border-box;
-        }
-
-        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #111111; border-top: 1px solid rgba(212, 175, 55, 0.2); display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; }
-        .nav-item { color: #888; cursor: pointer; font-size: 14px; font-weight: bold; display: flex; flex-direction: column; align-items: center; }
-        .nav-item.active { color: #f9d976; }
-        .nav-icon { font-size: 20px; margin-bottom: 2px; }
-
-        .floating-num { position: absolute; color: #f9d976; font-size: 24px; font-weight: bold; pointer-events: none; z-index: 10; animation: floatUp 0.6s ease-out forwards; }
-        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-100px) scale(0.8); } }
+        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #111; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #333; }
+        .nav-item { color: #888; font-size: 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
+        .nav-item.active { color: #d4af37; }
+        .btn-action { background: #d4af37; color: #000; border: none; padding: 12px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <span class="username">Arbahi Miner</span>
-        <span style="color: #888;">UQBl...TadT</span>
+        <div style="text-align: left;">
+            <div class="username" style="color: #d4af37; font-weight: bold;">Arbahi Miner</div>
+            <div id="status" style="font-size: 10px; color: #888;">Wallet: Not Connected</div>
+        </div>
+        <!-- مكان ظهور زر المحفظة التلقائي -->
+        <div id="ton-connect-btn"></div>
     </div>
 
-    <!-- ================= صفحة التعدين الرئيسية ================= -->
+    <!-- صفحة التعدين -->
     <div id="page-mine" class="page active">
-        <div class="balance-box">
-            <div style="color: #888; font-size: 12px; letter-spacing: 2px;">ASSETS</div>
-            <div id="balance">0.0000 <span style="color: #d4af37; font-size: 20px;">GOLD</span></div>
-        </div>
-
-        <div class="coin-container" id="coin-area">
-            <div class="coin" id="coin-btn">ARBAHI</div>
-        </div>
-
-        <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid rgba(212,175,55,0.1); width: 100%; box-sizing: border-box;">
-            <div style="display: flex; justify-content: space-between; font-size: 14px;">
-                <span style="color: #888;">⚡ الطاقة المتاحة</span>
-                <span style="color: #fff;" id="energy-text">500/500</span>
-            </div>
-            <div class="energy-box">
-                <div class="energy-bar" id="energy-fill"></div>
-            </div>
-            <div style="margin-top: 10px; font-size: 13px; text-align: center;">
-                <span style="color: #888;">سرعة التعدين:</span>
-                <span style="color: #d4af37; font-weight: bold;">+0.0024 / ثانية</span>
-            </div>
-        </div>
-        <button class="claim-btn" onclick="claimEarnings()">CLAIM</button>
+        <div id="balance">0.0000 GOLD</div>
+        <div class="coin-btn" id="main-coin">MINE</div>
+        <div style="font-size: 14px; color: #888;">Energy: <span id="energy">500</span>/500</div>
+        <button class="btn-action" style="margin-top: 20px;" onclick="showPage('withdraw')">طلب سحب الأرباح 💳</button>
     </div>
 
-    <!-- ================= صفحة المهام ================= -->
-    <div id="page-tasks" class="page">
-        <h2 style="color: #d4af37; margin-top: 20px;">المهام المتاحة</h2>
-        <p style="color: #888; font-size: 14px; margin-bottom: 20px;">نفذ المهام البسيطة التالية لزيادة رصيدك من الذهب فوراً!</p>
-        
-        <div class="tasks-container">
-            <div class="task-card">
-                <div class="task-info">
-                    <h4>الاشتراك في قناة التليجرام</h4>
-                    <p>+50.0000 GOLD</p>
-                </div>
-                <button class="task-btn" id="task-tg-btn" onclick="completeTask('tg', 'https://t.me/Arbahi_Mining_bot', 50)">ابدأ</button>
-            </div>
-
-            <div class="task-card">
-                <div class="task-info">
-                    <h4>زيارة مدونة Arbahi Pro</h4>
-                    <p>+30.0000 GOLD</p>
-                </div>
-                <button class="task-btn" id="task-blog-btn" onclick="completeTask('blog', 'https://alidaod898-sketch.github.io/arbahigold/', 30)">ابدأ</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ================= صفحة الأصدقاء المحدثة بالكامل ================= -->
-    <div id="page-friends" class="page">
-        <h2 style="color: #d4af37; margin-top: 20px;">ادعُ الأصدقاء واربح!</h2>
-        <p style="color: #888; font-size: 14px;">شارك رابط الإحالة الخاص بك مع أصدقائك، وستحصل على مكافأة قدرها 100 عملة GOLD عن كل صديق ينضم للبوت.</p>
-        
-        <div class="invite-box">
-            <div style="color: #888; font-size: 12px; margin-bottom: 8px; text-align: right;">رابط الإحالة الخاص بك:</div>
-            <input type="text" class="ref-link-input" id="ref-url" readonly value="https://t.me/Arbahi_Mining_bot?start=user9483">
-            <button class="claim-btn" style="padding: 10px; font-size: 14px; margin: 0;" onclick="copyRefLink()">نسخ الرابط 📋</button>
-        </div>
-
-        <div style="text-align: right; margin-top: 10px;">
-            <h3 style="color: #fff; font-size: 18px; border-bottom: 1px solid #222; padding-bottom: 8px;">قائمة أصدقائك (<span id="friends-count">0</span>)</h3>
-            <div id="friends-list" style="color: #666; text-align: center; margin-top: 20px; font-size: 14px;">
-                لم يقم أي صديق بالانضمام عبر رابطك بعد.
-            </div>
+    <!-- صفحة السحب (Withdraw) -->
+    <div id="page-withdraw" class="page">
+        <div class="withdraw-card">
+            <h3>سحب العملات إلى محفظتك</h3>
+            <p style="font-size: 12px; color: #aaa;">الحد الأدنى للسحب: 1000 GOLD</p>
             
-            <!-- زر محاكاة لدعوة صديق للتجربة والاختبار -->
-            <button class="claim-btn" style="background: transparent; border: 1px solid #d4af37; color: #d4af37; margin-top: 20px; font-size: 14px;" onclick="simulateFriendJoin()">دعوة صديق وهمي (للتجربة اختبار المكافأة) 👥</button>
+            <label>المبلغ المراد سحبه:</label>
+            <input type="number" id="withdraw-amount" class="input-box" placeholder="0.00">
+            
+            <label>عنوان المحفظة (TON Address):</label>
+            <input type="text" id="wallet-addr" class="input-box" placeholder="Connect wallet first" readonly>
+            
+            <button class="btn-action" onclick="processWithdraw()">تأكيد عملية السحب</button>
         </div>
+        <p style="font-size: 11px; color: #666; margin-top: 10px;">* تتم معالجة الطلبات خلال 24 ساعة بعد التأكد من صحة التعدين.</p>
     </div>
 
-    <!-- شريط التنقل السفلي -->
+    <!-- صفحة المهام -->
+    <div id="page-tasks" class="page">
+        <h2 style="color: #d4af37;">المهام</h2>
+        <p>نفذ المهام لزيادة رصيدك القابل للسحب.</p>
+    </div>
+
     <div class="nav-bar">
-        <div class="nav-item active" id="btn-mine" onclick="showPage('mine')">
-            <span class="nav-icon">⛏️</span>
-            <span>تعدين</span>
-        </div>
-        <div class="nav-item" id="btn-tasks" onclick="showPage('tasks')">
-            <span class="nav-icon">📋</span>
-            <span>المهام</span>
-        </div>
-        <div class="nav-item" id="btn-friends" onclick="showPage('friends')">
-            <span class="nav-icon">👥</span>
-            <span>الأصدقاء</span>
-        </div>
+        <div class="nav-item active" onclick="showPage('mine')"><span>⛏️</span><span>تعدين</span></div>
+        <div class="nav-item" onclick="showPage('tasks')"><span>📋</span><span>المهام</span></div>
+        <div class="nav-item" onclick="showPage('withdraw')"><span>💰</span><span>السحب</span></div>
     </div>
 
     <script>
-        let count = parseFloat(localStorage.getItem('arbahi_balance')) || 0.0000;
-        let energy = parseInt(localStorage.getItem('arbahi_energy')) || 500;
-        const maxEnergy = 500;
+        // 1. إعداد ربط المحفظة
+        const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+            manifestUrl: 'https://alidaod898-sketch.github.io/arbahigold/tonconnect-manifest.json',
+            buttonRootId: 'ton-connect-btn'
+        });
 
-        let completedTasks = JSON.parse(localStorage.getItem('arbahi_tasks')) || [];
-        // استعادة عدد الأصدقاء المستضافين تجريبياً
-        let invitedFriendsCount = parseInt(localStorage.getItem('arbahi_friends_count')) || 0;
+        let balance = parseFloat(localStorage.getItem('arbahi_balance')) || 0;
+        let energy = 500;
 
-        const balDisplay = document.getElementById('balance');
-        const energyText = document.getElementById('energy-text');
-        const energyFill = document.getElementById('energy-fill');
-        const coinArea = document.getElementById('coin-area');
-        const friendsCountTxt = document.getElementById('friends-count');
-        const friendsListDiv = document.getElementById('friends-list');
-
-        updateDisplay();
-        checkTasksStatus();
-        updateFriendsUI();
-
-        setInterval(() => {
-            count += 0.0024;
-            if (energy < maxEnergy) {
-                energy += 2;
-                if (energy > maxEnergy) energy = maxEnergy;
-            }
-            updateDisplay();
-            saveToStorage();
-        }, 1000);
-
-        document.getElementById('coin-btn').addEventListener('click', (e) => {
-            if (energy >= 1) {
-                count += 0.0100;
-                energy -= 1;
-                createFloatingNumber(e);
-                updateDisplay();
-                saveToStorage();
+        // مراقبة حالة اتصال المحفظة
+        tonConnectUI.onStatusChange(wallet => {
+            if (wallet) {
+                const addr = wallet.account.address;
+                document.getElementById('wallet-addr').value = addr.substring(0,8) + "..." + addr.substring(addr.length-4);
+                document.getElementById('status').innerText = "Wallet: Connected";
+                document.getElementById('status').style.color = "#4CAF50";
             } else {
-                alert('نفدت طاقتك! انتظر قليلاً ليتم إعادة الشحن.');
+                document.getElementById('wallet-addr').value = "";
+                document.getElementById('status').innerText = "Wallet: Not Connected";
             }
         });
 
-        function createFloatingNumber(e) {
-            const num = document.createElement('div');
-            num.className = 'floating-num';
-            num.innerText = '+0.01';
-            const rect = coinArea.getBoundingClientRect();
-            let x = e.clientX ? e.clientX - rect.left : rect.width / 2;
-            let y = e.clientY ? e.clientY - rect.top : rect.height / 2;
-            num.style.left = x + 'px';
-            num.style.top = y + 'px';
-            coinArea.appendChild(num);
-            setTimeout(() => { num.remove(); }, 600);
-        }
-
-        function updateDisplay() {
-            balDisplay.innerHTML = count.toFixed(4) + ' <span style="color: #d4af37; font-size: 20px;">GOLD</span>';
-            energyText.innerText = energy + '/' + maxEnergy;
-            energyFill.style.width = (energy / maxEnergy) * 100 + '%';
-        }
-
-        function saveToStorage() {
-            localStorage.setItem('arbahi_balance', count);
-            localStorage.setItem('arbahi_energy', energy);
-            localStorage.setItem('arbahi_tasks', JSON.stringify(completedTasks));
-            localStorage.setItem('arbahi_friends_count', invitedFriendsCount);
-        }
-
-        function claimEarnings() {
-            if(count > 0) {
-                alert('تم حصاد أرباحك بنجاح! رصيدك الحالي: ' + count.toFixed(4) + ' GOLD');
+        // 2. نظام التعدين والحفظ
+        document.getElementById('main-coin').addEventListener('click', () => {
+            if(energy > 0) {
+                balance += 0.01;
+                energy -= 1;
+                updateUI();
+                localStorage.setItem('arbahi_balance', balance);
             }
+        });
+
+        function updateUI() {
+            document.getElementById('balance').innerText = balance.toFixed(4) + " GOLD";
+            document.getElementById('energy').innerText = energy;
         }
 
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
             document.getElementById('page-' + pageId).classList.add('active');
-            document.getElementById('btn-' + pageId).classList.add('active');
         }
 
-        function completeTask(taskId, link, reward) {
-            if (completedTasks.includes(taskId)) return;
-            window.open(link, '_blank');
-            count += reward;
-            completedTasks.push(taskId);
-            updateDisplay();
-            saveToStorage();
-            checkTasksStatus();
-            alert('تهانينا! حصلت على +' + reward + ' عملة GOLD لإتمامك المهمة.');
-        }
-
-        function checkTasksStatus() {
-            if (completedTasks.includes('tg')) {
-                const tgBtn = document.getElementById('task-tg-btn');
-                tgBtn.innerText = 'تمت';
-                tgBtn.className = 'task-btn done';
-                tgBtn.onclick = null;
+        // 3. نظام السحب
+        function processWithdraw() {
+            const amount = parseFloat(document.getElementById('withdraw-amount').value);
+            if (!tonConnectUI.connected) {
+                alert("يرجى ربط المحفظة أولاً من الأعلى!");
+                return;
             }
-            if (completedTasks.includes('blog')) {
-                const blogBtn = document.getElementById('task-blog-btn');
-                blogBtn.innerText = 'تمت';
-                blogBtn.className = 'task-btn done';
-                blogBtn.onclick = null;
+            if (amount < 1000) {
+                alert("عذراً، الحد الأدنى للسحب هو 1000 GOLD");
+                return;
             }
-        }
-
-        // دالة نسخ الرابط
-        function copyRefLink() {
-            const copyText = document.getElementById("ref-url");
-            copyText.select();
-            copyText.setSelectionRange(0, 99999); /* للشاشات الذكية */
-            navigator.clipboard.writeText(copyText.value);
-            alert("تم نسخ رابط إحالتك بنجاح: " + copyText.value);
-        }
-
-        // دالة محاكاة انضمام صديق لاختبار التفاعل والمكافأة
-        function simulateFriendJoin() {
-            invitedFriendsCount += 1;
-            count += 100.0000; // إعطاء 100 عملة مكافأة الإحالة
-            updateDisplay();
-            saveToStorage();
-            updateFriendsUI();
-            alert("رائع! انضم صديق جديد عبر رابطك وحصلت على +100.0000 GOLD!");
-        }
-
-        // تحديث مظهر قائمة الأصدقاء بناءً على العدد
-        function updateFriendsUI() {
-            friendsCountTxt.innerText = invitedFriendsCount;
-            if (invitedFriendsCount > 0) {
-                friendsListDiv.innerHTML = "";
-                friendsListDiv.style.textAlign = "right";
-                for (let i = 1; i <= invitedFriendsCount; i++) {
-                    friendsListDiv.innerHTML += `<div style="background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; margin-bottom: 5px; color: #fff; font-size: 13px;">👤 مستخدم تليجرام رقم #00${i} (نشط) <span style="color: #d4af37; float: left;">+100 GOLD</span></div>`;
-                }
+            if (amount > balance) {
+                alert("رصيدك غير كافٍ!");
+                return;
             }
+
+            // هنا في التطبيق الحقيقي يتم إرسال الطلب لـ API
+            alert("تم إرسال طلب السحب بنجاح! سيتم التحقق من العملية وتحويل العملات لمحفظتك.");
+            balance -= amount;
+            localStorage.setItem('arbahi_balance', balance);
+            updateUI();
         }
+
+        setInterval(() => { if(energy < 500) energy++; updateUI(); }, 3000);
+        updateUI();
     </script>
 </body>
 </html>
