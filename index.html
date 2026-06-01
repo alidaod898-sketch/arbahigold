@@ -16,7 +16,7 @@
             display: flex; 
             flex-direction: column; 
             justify-content: flex-start; 
-            min-height: 100vh; /* تم التغيير هنا لضمان عدم اختفاء المحتوى */
+            min-height: 100vh; 
             margin: 0; 
             padding: 20px 20px 100px 20px; 
             box-sizing: border-box;
@@ -35,15 +35,37 @@
             box-sizing: border-box;
         }
 
+        /* تعديل الهيدر ليتسع لخانة السحب الجديدة */
         .header { 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            padding: 10px 15px;
+            padding: 12px 15px;
             margin-bottom: 15px;
             width: 100%;
         }
-        .username { color: #f9d976; font-weight: bold; font-size: 15px; }
+        .header-left {
+            text-align: right;
+        }
+        .header-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 5px;
+        }
+        .username { color: #f9d976; font-weight: bold; font-size: 14px; }
+        
+        /* تصميم خانة الرصيد المحجوز للسحب في الأعلى */
+        .withdrawable-box {
+            background: rgba(0, 242, 254, 0.1);
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            border-radius: 10px;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: bold;
+            color: #00f2fe;
+            text-align: right;
+        }
         #ton-connect-btn { scale: 0.85; transform-origin: right; }
         
         .page { display: none; flex-direction: column; justify-content: flex-start; width: 100%; }
@@ -159,18 +181,25 @@
 </head>
 <body>
 
+    <!-- الهيدر العلوي المحدث مع المحفظة ورصيد السحب الجانبي -->
     <div class="header glass-panel">
-        <div style="text-align: right;">
+        <div class="header-left">
             <span class="username">Arbahi Miner</span><br>
-            <span id="status" style="color: #bbb; font-size: 11px;">Wallet: Not Connected</span>
+            <span id="status" style="color: #bbb; font-size: 10px;">Wallet: Not Connected</span>
         </div>
-        <div id="ton-connect-btn"></div>
+        <div class="header-right">
+            <div id="ton-connect-btn"></div>
+            <!-- خانة الأرباح التي وضعت جانباً للسحب -->
+            <div class="withdrawable-box">
+                💰 للسحب: <span id="withdrawable-balance">0.0000</span> GOLD
+            </div>
+        </div>
     </div>
 
     <!-- ================= 1. صفحة التعدين الرئيسية ================= -->
     <div id="page-mine" class="page active">
         <div class="balance-box">
-            <div style="color: #aaa; font-size: 12px; letter-spacing: 2px; font-weight: bold;">TOTAL BALANCE</div>
+            <div style="color: #aaa; font-size: 12px; letter-spacing: 2px; font-weight: bold;">CURRENT MINING</div>
             <div id="balance">0.0000 <span style="color: #f5b041; font-size: 18px;">GOLD</span></div>
         </div>
 
@@ -191,6 +220,7 @@
                 <span style="color: #00f2fe; font-weight: bold;">+0.0012 / ثانية</span>
             </div>
         </div>
+        <!-- زر الترحيل وحفظ الأرباح جانباً -->
         <button class="claim-btn" onclick="claimEarnings()">CLAIM GOLD</button>
     </div>
 
@@ -277,7 +307,9 @@
             buttonRootId: 'ton-connect-btn'
         });
 
+        // تعريف المتغيرات واسترجاع الرصيد الأساسي ورصيد السحب المخزن
         let count = parseFloat(localStorage.getItem('arbahi_balance')) || 0.0000;
+        let withdrawableCount = parseFloat(localStorage.getItem('arbahi_withdrawable_balance')) || 0.0000;
         let energy = parseInt(localStorage.getItem('arbahi_energy')) || 500;
         const maxEnergy = 500;
 
@@ -285,6 +317,7 @@
         let invitedFriendsCount = parseInt(localStorage.getItem('arbahi_friends_count')) || 0;
 
         const balDisplay = document.getElementById('balance');
+        const withdrawableDisplay = document.getElementById('withdrawable-balance');
         const energyText = document.getElementById('energy-text');
         const energyFill = document.getElementById('energy-fill');
         const coinArea = document.getElementById('coin-area');
@@ -309,7 +342,7 @@
         });
 
         setInterval(() => {
-            count += 0.0012; // عداد مبطأ بنسبة النصف
+            count += 0.0012; 
             if (energy < maxEnergy) {
                 energy += 2;
                 if (energy > maxEnergy) energy = maxEnergy;
@@ -345,20 +378,29 @@
 
         function updateDisplay() {
             balDisplay.innerHTML = count.toFixed(4) + ' <span style="color: #f5b041; font-size: 18px;">GOLD</span>';
+            withdrawableDisplay.innerText = withdrawableCount.toFixed(4);
             energyText.innerText = energy + '/' + maxEnergy;
             energyFill.style.width = (energy / maxEnergy) * 100 + '%';
         }
 
         function saveToStorage() {
             localStorage.setItem('arbahi_balance', count);
+            localStorage.setItem('arbahi_withdrawable_balance', withdrawableCount);
             localStorage.setItem('arbahi_energy', energy);
             localStorage.setItem('arbahi_tasks', JSON.stringify(completedTasks));
             localStorage.setItem('arbahi_friends_count', invitedFriendsCount);
         }
 
+        // تحويل الرصيد الحالي إلى رصيد السحب المحفوظ في الأعلى وتصفير العداد
         function claimEarnings() {
             if(count > 0) {
-                alert('تم ترحيل وحفظ الأرباح بالكامل! رصيدك الكلي: ' + count.toFixed(4) + ' GOLD');
+                withdrawableCount += count;
+                alert('تم تحويل ' + count.toFixed(4) + ' GOLD بنجاح إلى رصيد السحب العلوي!');
+                count = 0; 
+                updateDisplay();
+                saveToStorage();
+            } else {
+                alert('رصيد التعدين الحالي فارغ حالياً.');
             }
         }
 
@@ -369,15 +411,16 @@
             document.getElementById('btn-' + pageId).classList.add('active');
         }
 
+        // عند إنهاء المهمة يضاف الرصيد مباشرة لرصيد السحب العلوي
         function completeTask(taskId, link, reward) {
             if (completedTasks.includes(taskId)) return;
             window.open(link, '_blank');
-            count += reward;
+            withdrawableCount += reward;
             completedTasks.push(taskId);
             updateDisplay();
             saveToStorage();
             checkTasksStatus();
-            alert('تهانينا! حصلت على +' + reward + ' عملة GOLD لإتمامك المهمة.');
+            alert('تهانينا! حصلت على +' + reward + ' عملة GOLD مباشرة في رصيد السحب الخاص بك.');
         }
 
         function checkTasksStatus() {
@@ -403,13 +446,14 @@
             alert("تم نسخ رابط الإحالة ليدك بنجاح! جاهز للمشاركة.");
         }
 
+        // رصيد الإحالة يذهب فوراً للرصيد العلوي الجاهز للسحب
         function simulateFriendJoin() {
             invitedFriendsCount += 1;
-            count += 100.0000;
+            withdrawableCount += 100.0000;
             updateDisplay();
             saveToStorage();
             updateFriendsUI();
-            alert("مستخدم تجريبي جديد سجل من خلالك! حصلت على +100.0000 GOLD!");
+            alert("مستخدم تجريبي جديد سجل من خلالك! حصلت على +100.0000 GOLD في رصيد السحب العلوي!");
         }
 
         function updateFriendsUI() {
@@ -423,6 +467,7 @@
             }
         }
 
+        // عملية السحب تعتمد الآن على الرصيد المحجوز في الأعلى (withdrawableCount)
         function processWithdraw() {
             const amount = parseFloat(document.getElementById('withdraw-amount').value);
             
@@ -438,12 +483,12 @@
                 alert("الحد الأدنى لتقديم المعاملة هو 1000 GOLD.");
                 return;
             }
-            if (amount > count) {
-                alert("رصيد العملات المتاحة لديك لا يكفي لإتمام هذه العملية حالياً.");
+            if (amount > withdrawableCount) {
+                alert("رصيد السحب العلوي لديك لا يكفي لإتمام هذه العملية. اضغط على CLAIM GOLD أولاً لترحيل أرباحك!");
                 return;
             }
 
-            count -= amount;
+            withdrawableCount -= amount;
             updateDisplay();
             saveToStorage();
             
