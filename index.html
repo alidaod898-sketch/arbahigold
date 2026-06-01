@@ -81,12 +81,33 @@
         }
         .task-btn.done { background: #333; color: #888; cursor: default; }
 
+        /* أسلوب صفحة الأصدقاء الجديد */
+        .invite-box {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px dashed rgba(212, 175, 55, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .ref-link-input {
+            width: 100%;
+            background: #000;
+            border: 1px solid #333;
+            color: #d4af37;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 12px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
         .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #111111; border-top: 1px solid rgba(212, 175, 55, 0.2); display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; }
         .nav-item { color: #888; cursor: pointer; font-size: 14px; font-weight: bold; display: flex; flex-direction: column; align-items: center; }
         .nav-item.active { color: #f9d976; }
         .nav-icon { font-size: 20px; margin-bottom: 2px; }
 
-        .placeholder-text { margin-top: 100px; color: #888; font-size: 16px; padding: 20px; line-height: 1.6; }
         .floating-num { position: absolute; color: #f9d976; font-size: 24px; font-weight: bold; pointer-events: none; z-index: 10; animation: floatUp 0.6s ease-out forwards; }
         @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-100px) scale(0.8); } }
     </style>
@@ -125,13 +146,12 @@
         <button class="claim-btn" onclick="claimEarnings()">CLAIM</button>
     </div>
 
-    <!-- ================= صفحة المهام المحدثة بالكامل ================= -->
+    <!-- ================= صفحة المهام ================= -->
     <div id="page-tasks" class="page">
         <h2 style="color: #d4af37; margin-top: 20px;">المهام المتاحة</h2>
         <p style="color: #888; font-size: 14px; margin-bottom: 20px;">نفذ المهام البسيطة التالية لزيادة رصيدك من الذهب فوراً!</p>
         
         <div class="tasks-container">
-            <!-- المهمة الأولى: تليجرام -->
             <div class="task-card">
                 <div class="task-info">
                     <h4>الاشتراك في قناة التليجرام</h4>
@@ -140,7 +160,6 @@
                 <button class="task-btn" id="task-tg-btn" onclick="completeTask('tg', 'https://t.me/Arbahi_Mining_bot', 50)">ابدأ</button>
             </div>
 
-            <!-- المهمة الثانية: المدونة -->
             <div class="task-card">
                 <div class="task-info">
                     <h4>زيارة مدونة Arbahi Pro</h4>
@@ -151,11 +170,25 @@
         </div>
     </div>
 
-    <!-- ================= صفحة الأصدقاء ================= -->
+    <!-- ================= صفحة الأصدقاء المحدثة بالكامل ================= -->
     <div id="page-friends" class="page">
-        <div class="placeholder-text">
-            <h2 style="color: #d4af37;">دعوة الأصدقاء (Referral)</h2>
-            <p>هنا سيتم توليد رابط إحالة مخصص للمسخدم ليقوم بنشره ودعوة أصدقائه والحصول على نسب من تعدينهم.</p>
+        <h2 style="color: #d4af37; margin-top: 20px;">ادعُ الأصدقاء واربح!</h2>
+        <p style="color: #888; font-size: 14px;">شارك رابط الإحالة الخاص بك مع أصدقائك، وستحصل على مكافأة قدرها 100 عملة GOLD عن كل صديق ينضم للبوت.</p>
+        
+        <div class="invite-box">
+            <div style="color: #888; font-size: 12px; margin-bottom: 8px; text-align: right;">رابط الإحالة الخاص بك:</div>
+            <input type="text" class="ref-link-input" id="ref-url" readonly value="https://t.me/Arbahi_Mining_bot?start=user9483">
+            <button class="claim-btn" style="padding: 10px; font-size: 14px; margin: 0;" onclick="copyRefLink()">نسخ الرابط 📋</button>
+        </div>
+
+        <div style="text-align: right; margin-top: 10px;">
+            <h3 style="color: #fff; font-size: 18px; border-bottom: 1px solid #222; padding-bottom: 8px;">قائمة أصدقائك (<span id="friends-count">0</span>)</h3>
+            <div id="friends-list" style="color: #666; text-align: center; margin-top: 20px; font-size: 14px;">
+                لم يقم أي صديق بالانضمام عبر رابطك بعد.
+            </div>
+            
+            <!-- زر محاكاة لدعوة صديق للتجربة والاختبار -->
+            <button class="claim-btn" style="background: transparent; border: 1px solid #d4af37; color: #d4af37; margin-top: 20px; font-size: 14px;" onclick="simulateFriendJoin()">دعوة صديق وهمي (للتجربة اختبار المكافأة) 👥</button>
         </div>
     </div>
 
@@ -180,16 +213,20 @@
         let energy = parseInt(localStorage.getItem('arbahi_energy')) || 500;
         const maxEnergy = 500;
 
-        // مصفوفة لحفظ حالة المهام المكتملة
         let completedTasks = JSON.parse(localStorage.getItem('arbahi_tasks')) || [];
+        // استعادة عدد الأصدقاء المستضافين تجريبياً
+        let invitedFriendsCount = parseInt(localStorage.getItem('arbahi_friends_count')) || 0;
 
         const balDisplay = document.getElementById('balance');
         const energyText = document.getElementById('energy-text');
         const energyFill = document.getElementById('energy-fill');
         const coinArea = document.getElementById('coin-area');
+        const friendsCountTxt = document.getElementById('friends-count');
+        const friendsListDiv = document.getElementById('friends-list');
 
         updateDisplay();
-        checkTasksStatus(); // فحص حالة المهام عند فتح التطبيق
+        checkTasksStatus();
+        updateFriendsUI();
 
         setInterval(() => {
             count += 0.0024;
@@ -236,6 +273,7 @@
             localStorage.setItem('arbahi_balance', count);
             localStorage.setItem('arbahi_energy', energy);
             localStorage.setItem('arbahi_tasks', JSON.stringify(completedTasks));
+            localStorage.setItem('arbahi_friends_count', invitedFriendsCount);
         }
 
         function claimEarnings() {
@@ -251,25 +289,17 @@
             document.getElementById('btn-' + pageId).classList.add('active');
         }
 
-        // دالة تنفيذ المهمة ومنح المكافأة
         function completeTask(taskId, link, reward) {
-            if (completedTasks.includes(taskId)) return; // إذا نفذها سابقاً لا يفعل شيء
-
-            // فتح الرابط المخصص للمهمة في نافذة جديدة
+            if (completedTasks.includes(taskId)) return;
             window.open(link, '_blank');
-
-            // إضافة المكافأة وتحديث البيانات
             count += reward;
             completedTasks.push(taskId);
-            
             updateDisplay();
             saveToStorage();
             checkTasksStatus();
-            
             alert('تهانينا! حصلت على +' + reward + ' عملة GOLD لإتمامك المهمة.');
         }
 
-        // دالة فحص وتعطيل الأزرار للمهام المكتملة
         function checkTasksStatus() {
             if (completedTasks.includes('tg')) {
                 const tgBtn = document.getElementById('task-tg-btn');
@@ -282,6 +312,37 @@
                 blogBtn.innerText = 'تمت';
                 blogBtn.className = 'task-btn done';
                 blogBtn.onclick = null;
+            }
+        }
+
+        // دالة نسخ الرابط
+        function copyRefLink() {
+            const copyText = document.getElementById("ref-url");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); /* للشاشات الذكية */
+            navigator.clipboard.writeText(copyText.value);
+            alert("تم نسخ رابط إحالتك بنجاح: " + copyText.value);
+        }
+
+        // دالة محاكاة انضمام صديق لاختبار التفاعل والمكافأة
+        function simulateFriendJoin() {
+            invitedFriendsCount += 1;
+            count += 100.0000; // إعطاء 100 عملة مكافأة الإحالة
+            updateDisplay();
+            saveToStorage();
+            updateFriendsUI();
+            alert("رائع! انضم صديق جديد عبر رابطك وحصلت على +100.0000 GOLD!");
+        }
+
+        // تحديث مظهر قائمة الأصدقاء بناءً على العدد
+        function updateFriendsUI() {
+            friendsCountTxt.innerText = invitedFriendsCount;
+            if (invitedFriendsCount > 0) {
+                friendsListDiv.innerHTML = "";
+                friendsListDiv.style.textAlign = "right";
+                for (let i = 1; i <= invitedFriendsCount; i++) {
+                    friendsListDiv.innerHTML += `<div style="background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; margin-bottom: 5px; color: #fff; font-size: 13px;">👤 مستخدم تليجرام رقم #00${i} (نشط) <span style="color: #d4af37; float: left;">+100 GOLD</span></div>`;
+                }
             }
         }
     </script>
