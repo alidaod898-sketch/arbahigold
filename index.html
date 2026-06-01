@@ -17,6 +17,8 @@
             margin: 0; 
             padding: 20px;
             box-sizing: border-box;
+            -webkit-user-select: none; /* منع تحديد النصوص أثناء النقر السريع */
+            user-select: none;
         }
         .header { display: flex; justify-content: space-between; padding-bottom: 15px; border-bottom: 1px solid rgba(212, 175, 55, 0.2); }
         .username { color: #d4af37; font-weight: bold; }
@@ -37,9 +39,9 @@
             border: 5px solid #fff; 
             box-shadow: 0 0 30px rgba(212, 175, 55, 0.6); 
             cursor: pointer;
-            transition: transform 0.1s;
+            transition: transform 0.05s;
         }
-        .coin:active { transform: scale(0.95); }
+        .coin:active { transform: scale(0.92); }
         .claim-btn { 
             background: linear-gradient(90deg, #d4af37 0%, #f9d976 100%); 
             color: #000; 
@@ -74,23 +76,49 @@
         <span style="color: #d4af37; font-size: 18px; font-weight: bold;">+0.0024 / ثانية</span>
     </div>
 
-    <button class="claim-btn" onclick="alert('تم حصاد الأرباح بنجاح!')">CLAIM</button>
+    <button class="claim-btn" onclick="claimEarnings()">CLAIM</button>
 
     <script>
-        let count = 0.0000;
+        // تحميل الرصيد المحفوظ أو البدء من الصفر إذا كان مستخدماً جديداً
+        let count = parseFloat(localStorage.getItem('arbahi_balance')) || 0.0000;
+        
         const balDisplay = document.getElementById('balance');
         
-        // التعدين التلقائي
+        // تحديث الشاشة فور دخول المستخدم بالرصيد المحفوظ
+        updateDisplay();
+
+        // التعدين التلقائي (كل ثانية يزيد الرصيد ويُحفظ تلقائياً)
         setInterval(() => {
             count += 0.0024;
-            balDisplay.innerHTML = count.toFixed(4) + ' <span style="color: #d4af37; font-size: 20px;">GOLD</span>';
+            updateDisplay();
+            saveToStorage();
         }, 1000);
 
-        // زيادة الرصيد عند النقر على العملة
+        // زيادة الرصيد عند النقر على العملة وحفظه فوراً
         document.getElementById('coin-btn').addEventListener('click', () => {
             count += 0.0100;
-            balDisplay.innerHTML = count.toFixed(4) + ' <span style="color: #d4af37; font-size: 20px;">GOLD</span>';
+            updateDisplay();
+            saveToStorage();
         });
+
+        // دالة تحديث الأرقام على الشاشة بدقة 4 أرقام عشرية
+        function updateDisplay() {
+            balDisplay.innerHTML = count.toFixed(4) + ' <span style="color: #d4af37; font-size: 20px;">GOLD</span>';
+        }
+
+        // دالة حفظ الرصيد في الذاكرة المحلية
+        function saveToStorage() {
+            localStorage.setItem('arbahi_balance', count);
+        }
+
+        // دالة زر الحصاد
+        function claimEarnings() {
+            if(count > 0) {
+                alert('تم حصاد أرباحك بنجاح! رصيدك الحالي: ' + count.toFixed(4) + ' GOLD');
+            } else {
+                alert('ليس لديك أرباح كافية لحصادها بعد!');
+            }
+        }
     </script>
 </body>
 </html>
