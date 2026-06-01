@@ -17,14 +17,23 @@
             margin: 0; 
             padding: 20px;
             box-sizing: border-box;
-            -webkit-user-select: none; /* منع تحديد النصوص أثناء النقر السريع */
+            -webkit-user-select: none;
             user-select: none;
+            overflow: hidden;
         }
         .header { display: flex; justify-content: space-between; padding-bottom: 15px; border-bottom: 1px solid rgba(212, 175, 55, 0.2); }
         .username { color: #d4af37; font-weight: bold; }
-        .balance-box { margin-top: 30px; }
+        .balance-box { margin-top: 20px; }
         #balance { font-size: 40px; font-weight: bold; color: #fff; margin-top: 10px; }
-        .coin-container { display: flex; justify-content: center; align-items: center; margin: 40px 0; }
+        
+        /* منطقة العملة والأرقام الطائرة */
+        .coin-container { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            margin: 30px 0; 
+            position: relative; 
+        }
         .coin { 
             width: 200px; 
             height: 200px; 
@@ -40,8 +49,27 @@
             box-shadow: 0 0 30px rgba(212, 175, 55, 0.6); 
             cursor: pointer;
             transition: transform 0.05s;
+            position: relative;
+            z-index: 2;
         }
         .coin:active { transform: scale(0.92); }
+        
+        /* شريط الطاقة */
+        .energy-box {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            height: 12px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        .energy-bar {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #f9d976 0%, #e9b646 100%);
+            transition: width 0.1s ease;
+        }
+
         .claim-btn { 
             background: linear-gradient(90deg, #d4af37 0%, #f9d976 100%); 
             color: #000; 
@@ -53,6 +81,21 @@
             width: 100%; 
             cursor: pointer; 
             box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+        }
+
+        /* حركة الأرقام الطائرة */
+        .floating-num {
+            position: absolute;
+            color: #f9d976;
+            font-size: 24px;
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 10;
+            animation: floatUp 0.6s ease-out forwards;
+        }
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-100px) scale(0.8); }
         }
     </style>
 </head>
@@ -67,56 +110,110 @@
         <div id="balance">0.0000 <span style="color: #d4af37; font-size: 20px;">GOLD</span></div>
     </div>
 
-    <div class="coin-container">
+    <div class="coin-container" id="coin-area">
         <div class="coin" id="coin-btn">ARBAHI</div>
     </div>
 
     <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid rgba(212,175,55,0.1);">
-        <span style="color: #888; display: block; font-size: 14px;">سرعة التعدين</span>
-        <span style="color: #d4af37; font-size: 18px; font-weight: bold;">+0.0024 / ثانية</span>
+        <div style="display: flex; justify-content: space-between; font-size: 14px;">
+            <span style="color: #888;">⚡ الطاقة المتاحة</span>
+            <span style="color: #fff;" id="energy-text">500/500</span>
+        </div>
+        <div class="energy-box">
+            <div class="energy-bar" id="energy-fill"></div>
+        </div>
+        <div style="margin-top: 15px; font-size: 14px;">
+            <span style="color: #888;">سرعة التعدين:</span>
+            <span style="color: #d4af37; font-weight: bold;">+0.0024 / ثانية</span>
+        </div>
     </div>
 
     <button class="claim-btn" onclick="claimEarnings()">CLAIM</button>
 
     <script>
-        // تحميل الرصيد المحفوظ أو البدء من الصفر إذا كان مستخدماً جديداً
+        // استعادة البيانات من الذاكرة أو تعيين الافتراضية
         let count = parseFloat(localStorage.getItem('arbahi_balance')) || 0.0000;
-        
+        let energy = parseInt(localStorage.getItem('arbahi_energy')) || 500;
+        const maxEnergy = 500;
+
         const balDisplay = document.getElementById('balance');
-        
-        // تحديث الشاشة فور دخول المستخدم بالرصيد المحفوظ
+        const energyText = document.getElementById('energy-text');
+        const energyFill = document.getElementById('energy-fill');
+        const coinArea = document.getElementById('coin-area');
+
+        // تحديث الواجهة فوراً عند التحميل
         updateDisplay();
 
-        // التعدين التلقائي (كل ثانية يزيد الرصيد ويُحفظ تلقائياً)
+        // التعدين التلقائي وشحن الطاقة (كل ثانية)
         setInterval(() => {
-            count += 0.0024;
+            count += 0.0024; // زيادة رصيد التعدين الآلي
+            
+            if (energy < maxEnergy) {
+                energy += 2; // شحن طاقة تلقائي (+2 طاقة في الثانية)
+                if (energy > maxEnergy) energy = maxEnergy;
+            }
+            
             updateDisplay();
             saveToStorage();
         }, 1000);
 
-        // زيادة الرصيد عند النقر على العملة وحفظه فوراً
-        document.getElementById('coin-btn').addEventListener('click', () => {
-            count += 0.0100;
-            updateDisplay();
-            saveToStorage();
+        // حدث النقر على العملة وتوليد التأثيرات الحركية
+        document.getElementById('coin-btn').addEventListener('click', (e) => {
+            if (energy >= 1) {
+                count += 0.0100; // زيادة الرصيد من النقر
+                energy -= 1;     // استهلاك 1 طاقة
+                
+                // تشغيل الأرقام الطائرة مكان النقرة
+                createFloatingNumber(e);
+                
+                updateDisplay();
+                saveToStorage();
+            } else {
+                alert('نفدت طاقتك! انتظر قليلاً ليتم إعادة الشحن.');
+            }
         });
 
-        // دالة تحديث الأرقام على الشاشة بدقة 4 أرقام عشرية
+        // دالة إنشاء الأرقام الطائرة
+        function createFloatingNumber(e) {
+            const num = document.createElement('div');
+            num.className = 'floating-num';
+            num.innerText = '+0.01';
+            
+            // تحديد موقع النقر بدقة داخل الحاوية
+            const rect = coinArea.getBoundingClientRect();
+            let x, y;
+            if(e.clientX) {
+                x = e.clientX - rect.left;
+                y = e.clientY - rect.top;
+            } else { // لدعم شاشات اللمس للهواتف
+                x = rect.width / 2;
+                y = rect.height / 2;
+            }
+            
+            num.style.left = x + 'px';
+            num.style.top = y + 'px';
+            
+            coinArea.appendChild(num);
+            
+            // مسح العنصر بعد انتهاء الحركة تماماً لتخفيف الحمل
+            setTimeout(() => { num.remove(); }, 600);
+        }
+
         function updateDisplay() {
             balDisplay.innerHTML = count.toFixed(4) + ' <span style="color: #d4af37; font-size: 20px;">GOLD</span>';
+            energyText.innerText = energy + '/' + maxEnergy;
+            const pct = (energy / maxEnergy) * 100;
+            energyFill.style.width = pct + '%';
         }
 
-        // دالة حفظ الرصيد في الذاكرة المحلية
         function saveToStorage() {
             localStorage.setItem('arbahi_balance', count);
+            localStorage.setItem('arbahi_energy', energy);
         }
 
-        // دالة زر الحصاد
         function claimEarnings() {
             if(count > 0) {
                 alert('تم حصاد أرباحك بنجاح! رصيدك الحالي: ' + count.toFixed(4) + ' GOLD');
-            } else {
-                alert('ليس لديك أرباح كافية لحصادها بعد!');
             }
         }
     </script>
