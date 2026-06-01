@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arbahi Mining Bot - Stable v3</title>
+    <title>Arbahi Gold Ultimate Edition</title>
     <style>
         body { 
             background: linear-gradient(135deg, #1e0b36 0%, #0c1033 50%, #051c2c 100%); 
             color: #ffffff; text-align: center; font-family: sans-serif; 
             margin: 0; padding: 20px 20px 100px 20px; box-sizing: border-box;
-            -webkit-user-select: none; user-select: none; overflow-x: hidden;
+            -webkit-user-select: none; user-select: none;
         }
         .glass-panel { background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 15px; }
         .header { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; margin-bottom: 15px; }
@@ -20,157 +20,97 @@
         
         #balance { font-size: 38px; font-weight: 900; margin-top: 10px; text-shadow: 0 4px 15px rgba(245, 176, 65, 0.3); }
         
-        .coin-container { display: flex; justify-content: center; align-items: center; margin: 25px 0; position: relative; height: 200px; }
+        /* تأثيرات العملة الذهبية المتحركة النبضية */
+        .coin-container { display: flex; justify-content: center; align-items: center; margin: 25px 0; position: relative; }
         .coin { 
-            width: 170px; height: 170px; 
+            width: 180px; height: 180px; 
             background: radial-gradient(circle, #ffe066 0%, #f5b041 70%, #cf850c 100%); 
             border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; 
             font-weight: bold; border: 6px solid #fff; cursor: pointer;
-            box-shadow: 0 0 30px rgba(245, 176, 65, 0.6);
+            box-shadow: 0 0 30px rgba(245, 176, 65, 0.6), inset 0 -6px 10px rgba(0,0,0,0.2);
             transition: transform 0.05s;
             animation: pulseGlow 2s infinite ease-in-out;
-            z-index: 5;
         }
         .coin:active { transform: scale(0.92); }
-        .coin-text { font-size: 14px; color: #fff; font-weight: 900; text-shadow: 0 2px 4px rgba(0,0,0,0.6); margin-top: 5px; }
-        .coin-emoji { font-size: 45px; }
+        .coin-text { font-size: 14px; color: #fff; letter-spacing: 1px; font-weight: 900; text-shadow: 0 2px 4px rgba(0,0,0,0.6); margin-top: 5px; }
+        .coin-emoji { font-size: 45px; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.3)); }
 
-        @keyframes pulseGlow { 0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(245, 176, 65, 0.5); } 50% { transform: scale(1.03); box-shadow: 0 0 35px rgba(245, 176, 65, 0.8); } }
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 20px rgba(245, 176, 65, 0.5); }
+            50% { box-shadow: 0 0 35px rgba(245, 176, 65, 0.8); transform: scale(1.02); }
+            100% { box-shadow: 0 0 20px rgba(245, 176, 65, 0.5); }
+        }
 
         .energy-box { width: 100%; background: rgba(255,255,255,0.1); border-radius: 10px; height: 12px; margin-top: 10px; overflow: hidden; }
-        .energy-bar { height: 100%; background: linear-gradient(90deg, #ffdb4d, #f39c12); width: 100%; transition: width 0.2s; }
+        .energy-bar { height: 100%; background: linear-gradient(90deg, #ffdb4d, #f39c12); transition: width 0.1s ease; }
         
-        .claim-btn { background: linear-gradient(135deg, #00f2fe, #4facfe); color: #fff; border: none; padding: 15px; border-radius: 14px; width: 100%; margin-top: 15px; font-weight: bold; font-size: 16px; cursor: pointer; }
+        .claim-btn { background: linear-gradient(135deg, #00f2fe, #4facfe); color: #fff; border: none; padding: 15px; border-radius: 14px; width: 100%; margin-top: 15px; font-weight: bold; font-size: 16px; cursor: pointer; box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3); }
+        .claim-btn:active { transform: scale(0.98); }
+
+        /* ستايل شبكة المتجر الاحترافي (مصلح بالكامل) */
+        .store-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; max-height: 53vh; overflow-y: auto; margin-top: 10px; padding-bottom: 20px; }
+        .miner-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 15px 10px; position: relative; box-sizing: border-box; }
+        .miner-card.active-miner { border-color: #f5b041; background: rgba(245, 176, 65, 0.05); }
+        .lvl-tag { position: absolute; top: 8px; right: 8px; font-size: 9px; color: #ccc; }
+        .store-btn { width: 100%; padding: 10px; border-radius: 10px; border: none; font-weight: bold; font-size: 12px; cursor: pointer; margin-top: 5px; }
+        .buy { background: #f5b041; color: #000; }
+        .active-btn { background: rgba(255,255,255,0.2); color: #fff; cursor: default; }
         
-        .nav-bar { position: fixed; bottom: 12px; left: 10px; right: 10px; background: rgba(12, 16, 51, 0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; padding: 10px 0; border-radius: 24px; border: 1px solid rgba(255,255,255,0.08); z-index: 1000; }
+        /* شريط السفلي الخماسي */
+        .nav-bar { position: fixed; bottom: 12px; left: 10px; right: 10px; background: rgba(12, 16, 51, 0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; padding: 10px 0; border-radius: 24px; border: 1px solid rgba(255,255,255,0.08); z-index: 9999; }
         .nav-item { color: #7f8c8d; font-size: 10px; display: flex; flex-direction: column; align-items: center; width: 20%; cursor: pointer; }
         .nav-item.active { color: #00f2fe; }
-        .nav-icon { font-size: 18px; }
+        .nav-icon { font-size: 18px; margin-bottom: 2px; }
+        .input-box { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 12px; border-radius: 10px; margin-bottom: 10px; text-align: center; box-sizing: border-box; }
 
-        .floating-num { position: absolute; color: #ffe066; font-size: 26px; font-weight: bold; pointer-events: none; animation: floatUp 0.7s ease-out forwards; z-index: 100; }
-        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-120px); } }
-
-        .store-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .miner-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 10px; }
+        .floating-num { position: absolute; color: #ffe066; font-size: 24px; font-weight: bold; pointer-events: none; animation: floatUp 0.6s ease-out forwards; text-shadow: 0 2px 8px rgba(245, 176, 65, 0.6); z-index: 1000; }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-100px); } }
     </style>
 </head>
 <body>
 
     <div class="header glass-panel">
         <div style="text-align: right;">
-            <b style="color:#f5b041;">Arbahi Miner 🚀</b><br>
-            <small style="color:#aaa;">ID: #948375</small>
+            <span style="color:#f5b041; font-weight:bold;">Arbahi Miner 🚀</span><br>
+            <span style="font-size:10px; color:#aaa;">ID: #948375</span>
         </div>
-        <div class="withdrawable-box">GOLD الرصيد: <span id="w-bal">0.0000</span></div>
+        <div class="withdrawable-box">GOLD الرصيد: <span id="withdrawable-balance">0.0000</span></div>
     </div>
 
-    <!-- الصفحة الرئيسية -->
-    <div id="p-mine" class="page active">
-        <div id="balance">0.0000 <small style="font-size:18px; color:#f5b041;">GOLD</small></div>
-        <div class="coin-container">
-            <div class="coin" id="tap-target">
+    <div id="page-mine" class="page active">
+        <div id="balance">0.0000 <span style="font-size:18px; color:#f5b041;">GOLD</span></div>
+        
+        <div class="coin-container" id="coin-area">
+            <div class="coin" id="coin-btn">
                 <span class="coin-emoji">🪙</span>
                 <span class="coin-text">TAP & EARN</span>
             </div>
         </div>
+
         <div class="glass-panel">
             <div style="display:flex; justify-content:space-between; font-size:13px;">
                 <span>⚡ الطاقة</span>
-                <span id="eng-txt">500/500</span>
+                <span id="energy-text">500/500</span>
             </div>
-            <div class="energy-box"><div class="energy-bar" id="eng-bar"></div></div>
-            <p style="font-size:11px; color:#00f2fe; margin-top:8px;">السرعة: +<span id="spd-txt">0.0012</span>/ث</p>
+            <div class="energy-box"><div class="energy-bar" id="energy-fill"></div></div>
+            <p style="font-size:12px; color:#00f2fe; margin: 8px 0 0 0;">السرعة الحالية: +<span id="speed-display">0.0012</span> / ثانية</p>
         </div>
-        <button class="claim-btn" id="claim-now">CLAIM GOLD</button>
+        <button class="claim-btn" onclick="claimEarnings()">CLAIM GOLD</button>
     </div>
 
-    <!-- باقي الصفحات -->
-    <div id="p-store" class="page"><h3>المتجر (100 ليفل)</h3><div class="store-grid" id="s-grid"></div></div>
-    <div id="p-tasks" class="page"><h3>المهام</h3><div class="glass-panel">قريباً..</div></div>
-    <div id="p-friends" class="page"><h3>الأصدقاء</h3><div class="glass-panel">رابطك: t.me/ArbahiBot</div></div>
-    <div id="p-withdraw" class="page"><h3>السحب</h3><div class="glass-panel">الحد الأدنى 10 TON</div></div>
-
-    <div class="nav-bar">
-        <div class="nav-item active" onclick="nav('mine')"><span class="nav-icon">⛏️</span><span>تعدين</span></div>
-        <div class="nav-item" onclick="nav('store')"><span class="nav-icon">⚡</span><span>المتجر</span></div>
-        <div class="nav-item" onclick="nav('tasks')"><span class="nav-icon">📋</span><span>المهام</span></div>
-        <div class="nav-item" onclick="nav('friends')"><span class="nav-icon">👥</span><span>الأصدقاء</span></div>
-        <div class="nav-item" onclick="nav('withdraw')"><span class="nav-icon">💰</span><span>السحب</span></div>
+    <div id="page-store" class="page">
+        <h3 style="color:#f5b041; margin-top: 5px;">المتجر الذكي (100 ليفل)</h3>
+        <div class="store-grid" id="store-grid"></div>
     </div>
 
-    <script>
-        const WALLET = "UQDHv9eGYkUfDz4N9QTpWESn86Yx_bZcM60kJ4dEDf6Fg8FO";
-        let bal = parseFloat(localStorage.getItem('b')) || 0;
-        let wbal = parseFloat(localStorage.getItem('wb')) || 0;
-        let lvl = parseInt(localStorage.getItem('l')) || 1;
-        let eng = parseInt(localStorage.getItem('e')) || 500;
-        let speed = 0.0012 + (lvl * 0.0015);
+    <div id="page-tasks" class="page">
+        <h3 style="color:#f5b041; margin-top: 5px;">المهام اليومية</h3>
+        <div class="glass-panel" style="margin-bottom:10px; text-align: right;">
+            <h4>قناة التليجرام الرسمية</h4>
+            <p style="color:#00f2fe; font-size:12px; margin:0 0 10px 0;">+50.00 GOLD</p>
+            <button class="store-btn buy" style="width:auto; padding:8px 20px;" onclick="window.open('https://t.me/Arbahi_Mining_bot', '_blank')">انضم الآن</button>
+        </div>
+    </div>
 
-        function update() {
-            document.getElementById('balance').innerHTML = bal.toFixed(4) + ' <small style="font-size:18px; color:#f5b041;">GOLD</small>';
-            document.getElementById('w-bal').innerText = wbal.toFixed(4);
-            document.getElementById('eng-txt').innerText = eng + "/500";
-            document.getElementById('eng-bar').style.width = (eng / 500 * 100) + "%";
-            document.getElementById('spd-txt').innerText = speed.toFixed(4);
-        }
-
-        // نظام النقر المباشر
-        document.getElementById('tap-target').onclick = function(e) {
-            if(eng > 0) {
-                bal += 0.01;
-                eng -= 1;
-                const f = document.createElement('div');
-                f.className = 'floating-num';
-                f.innerText = '+0.01';
-                f.style.left = e.clientX + 'px';
-                f.style.top = e.clientY + 'px';
-                document.body.appendChild(f);
-                setTimeout(() => f.remove(), 700);
-                update();
-                save();
-            }
-        };
-
-        // نظام التعدين التلقائي وشحن الطاقة
-        setInterval(() => {
-            bal += speed;
-            if(eng < 500) eng += 1;
-            update();
-            save();
-        }, 1000);
-
-        function save() {
-            localStorage.setItem('b', bal);
-            localStorage.setItem('wb', wbal);
-            localStorage.setItem('l', lvl);
-            localStorage.setItem('e', eng);
-        }
-
-        function nav(p) {
-            document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
-            document.getElementById('p-' + p).classList.add('active');
-            document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-        }
-
-        document.getElementById('claim-now').onclick = function() {
-            wbal += bal; bal = 0; update(); save(); alert('تم الحصاد!');
-        };
-
-        // بناء المتجر
-        const g = document.getElementById('s-grid');
-        for(let i=1; i<=100; i++) {
-            let c = (0.02 * i).toFixed(2);
-            g.innerHTML += `<div class="miner-card">Lvl ${i}<br><button style="width:100%; margin-top:5px;" onclick="buy(${i},${c})">${i<=lvl?'مفعل':'شحن '+c}</button></div>`;
-        }
-
-        window.buy = function(l, c) {
-            if(l <= lvl) return;
-            window.location.href = `ton://transfer/${WALLET}?amount=${c * 1000000000}`;
-            setTimeout(() => { lvl = l; speed = 0.0012+(lvl*0.0015); update(); save(); }, 3000);
-        };
-
-        update();
-    </script>
-</body>
-</html>
+    <div id="page-friends" class="page">
+        <h3 style="color:#f5b041; margin-top: 5px
