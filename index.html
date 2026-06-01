@@ -20,7 +20,6 @@
         
         #balance { font-size: 38px; font-weight: 900; margin-top: 10px; text-shadow: 0 4px 15px rgba(245, 176, 65, 0.3); }
         
-        /* تصميم زر النقر الكبير والمتحرك */
         .coin-container { display: flex; justify-content: center; align-items: center; margin: 25px 0; position: relative; height: 200px; }
         .coin { 
             width: 180px; height: 180px; 
@@ -48,7 +47,6 @@
         .claim-btn { background: linear-gradient(135deg, #00f2fe, #4facfe); color: #fff; border: none; padding: 15px; border-radius: 14px; width: 100%; margin-top: 15px; font-weight: bold; font-size: 16px; cursor: pointer; box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3); }
         .claim-btn:active { transform: scale(0.98); }
 
-        /* تصميم المتجر الفاخر المتناسق 100% */
         .store-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; max-height: 50vh; overflow-y: auto; margin-top: 10px; padding-bottom: 20px; }
         .miner-card { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 15px 10px; position: relative; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .miner-card.active-miner { border-color: #f5b041; background: rgba(245, 176, 65, 0.08); box-shadow: 0 0 15px rgba(245, 176, 65, 0.2); }
@@ -58,7 +56,6 @@
         .buy:active { transform: scale(0.95); }
         .active-btn { background: rgba(255,255,255,0.15); color: #fff; cursor: default; border: 1px solid rgba(255,255,255,0.2); }
         
-        /* شريط التنقل السفلي الخماسي الثابت والمحمي */
         .nav-bar { position: fixed; bottom: 12px; left: 10px; right: 10px; background: rgba(12, 16, 51, 0.96); backdrop-filter: blur(12px); display: flex; justify-content: space-around; padding: 12px 0; border-radius: 24px; border: 1px solid rgba(255,255,255,0.08); z-index: 99999; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
         .nav-item { color: #7f8c8d; font-size: 11px; display: flex; flex-direction: column; align-items: center; width: 20%; cursor: pointer; transition: color 0.2s; }
         .nav-item.active { color: #00f2fe; font-weight: bold; }
@@ -151,55 +148,33 @@
     </div>
 
     <script>
-        // المحفظة الرسمية الخاصة بك على بينانس لفتح التحويل المباشر
         const BINANCE_WALLET = "UQDHv9eGYkUfDz4N9QTpWESn86Yx_bZcM60kJ4dEDf6Fg8FO";
-        
-        // جلب البيانات المخزنة بأمان منعاً لأي تجميد
         let count = parseFloat(localStorage.getItem('bal')) || 0;
         let withBal = parseFloat(localStorage.getItem('wbal')) || 0;
         let level = parseInt(localStorage.getItem('lvl')) || 1;
         let energy = localStorage.getItem('energy_val') !== null ? parseInt(localStorage.getItem('energy_val')) : 500;
         const maxEnergy = 500;
-        
-        // معادلة حساب السرعة الدقيقة بناءً على الليفل
         let speed = 0.0012 + (level * 0.0015);
 
-        // بناء المتجر الـ 100 مستوى بشكل برمي متقن بدون اختصارات للتصميم
         function renderStore() {
             const grid = document.getElementById('store-grid');
             if (!grid) return;
             grid.innerHTML = "";
-            
             for (let i = 1; i <= 100; i++) {
                 let cost = (0.02 * i).toFixed(2);
                 const card = document.createElement('div');
                 card.className = `miner-card ${i === level ? 'active-miner' : ''}`;
-                
-                let btnHtml = "";
-                if (i <= level) {
-                    btnHtml = `<button class="store-btn active-btn">مفعل ✅</button>`;
-                } else {
-                    btnHtml = `<button class="store-btn buy" onclick="buyLevel(${i}, ${cost})">شحن ${cost} TON</button>`;
-                }
-
-                card.innerHTML = `
-                    <span class="lvl-tag">Lvl ${i}</span>
-                    <div style="font-size:26px; margin: 5px 0;">🧠</div>
-                    <div style="font-size:12px; font-weight:bold; margin-bottom:4px; color:#f5b041;">Matrix ${i}</div>
-                    ${btnHtml}
-                `;
+                let btnHtml = i < level ? `<button class="store-btn active-btn">مفعل ✅</button>` : 
+                              (i === level ? `<button class="store-btn active-btn">المستوى الحالي</button>` : 
+                              `<button class="store-btn buy" onclick="buyLevel(${i}, ${cost})">شحن ${cost} TON</button>`);
+                card.innerHTML = `<span class="lvl-tag">Lvl ${i}</span><div style="font-size:26px; margin: 5px 0;">${i > level ? '🔒' : '🧠'}</div><div style="font-size:12px; font-weight:bold; margin-bottom:4px; color:#f5b041;">Matrix ${i}</div>${btnHtml}`;
                 grid.appendChild(card);
             }
         }
 
-        // دالة الشراء الصامتة وربطها التلقائي بمحفظة TON للمستخدم
         function buyLevel(lvl, cost) {
             if (lvl <= level) return;
-            
-            // فتح محفظة المستخدم مباشرة لإرسال القيمة لعنوانك المخصص
             window.location.href = `ton://transfer/${BINANCE_WALLET}?amount=${cost * 1000000000}`;
-            
-            // تحديث الترقية وحفظها في الذاكرة المحلية تلقائياً عند العودة لتجنب التجمد
             setTimeout(() => {
                 level = lvl;
                 speed = 0.0012 + (level * 0.0015);
@@ -209,7 +184,6 @@
             }, 3000);
         }
 
-        // معالجة حدث النقر للعملة وخصم الطاقة
         document.getElementById('coin-btn').addEventListener('click', function(e) {
             if (energy >= 1) {
                 count += 0.0100;
@@ -218,29 +192,21 @@
                 updateDisplay();
                 saveData();
             } else {
-                alert("طاقتك الحالية نفدت! انتظر قليلاً لتمتلئ تلقائياً.");
+                alert("طاقتك الحالية نفدت!");
             }
         });
 
-        // ظهور الأرقام الطائرة الجذابة فوق العملة
         function createFloatingNumber(e) {
             const coinArea = document.getElementById('coin-area');
-            if (!coinArea) return;
             const num = document.createElement('div');
             num.className = 'floating-num';
             num.innerText = '+0.01';
-            
-            const rect = coinArea.getBoundingClientRect();
-            let x = e.clientX ? e.clientX - rect.left : rect.width / 2;
-            let y = e.clientY ? e.clientY - rect.top : rect.height / 2;
-            
-            num.style.left = x + 'px';
-            num.style.top = y + 'px';
-            coinArea.appendChild(num);
+            num.style.left = (e.clientX - 20) + 'px';
+            num.style.top = (e.clientY - 20) + 'px';
+            document.body.appendChild(num);
             setTimeout(() => { num.remove(); }, 600);
         }
 
-        // تحديث جميع النصوص والشاشات والعدادات في الواجهة في نفس الوقت
         function updateDisplay() {
             document.getElementById('balance').innerHTML = count.toFixed(4) + ' <span style="font-size:18px; color:#f5b041;">GOLD</span>';
             document.getElementById('withdrawable-balance').innerText = withBal.toFixed(4);
@@ -249,7 +215,6 @@
             document.getElementById('speed-display').innerText = speed.toFixed(4);
         }
 
-        // حفظ البيانات في كاش المتصفح لضمان عدم ضياع تعب المستخدمين
         function saveData() {
             localStorage.setItem('bal', count);
             localStorage.setItem('wbal', withBal);
@@ -257,77 +222,50 @@
             localStorage.setItem('energy_val', energy);
         }
 
-        // العداد الآمن الشامل (التعدين التلقائي المستمر + تجديد الطاقة بانتظام كل ثانية)
         setInterval(() => {
             count += speed; 
-            if (energy < maxEnergy) {
-                energy += 1; 
-            }
+            if (energy < maxEnergy) energy += 1; 
             updateDisplay();
             saveData();
         }, 1000);
 
-        // دالة الحصاد ونقل الرصيد إلى الخانة القابلة للسحب
         function claimEarnings() {
             if (count > 0) {
                 withBal += count;
                 count = 0;
                 updateDisplay();
                 saveData();
-                alert('تم حصاد أرباحك بنجاح ونقلها إلى رصيد الـ GOLD القابل للسحب الخاص بك!');
-            } else {
-                alert('الرصيد الحالي للتعدين هو 0، انتظر قليلاً ليقوم البوت بالتعدين التلقائي!');
+                alert('تم الحصاد!');
             }
         }
 
-        // نسخ رابط الإحالة
         function copyLink() {
             const linkInput = document.getElementById('ref-link');
-            if(linkInput) {
-                linkInput.select();
-                document.execCommand('copy');
-                alert('تم نسخ رابط الإحالة الخاص بك بنجاح!');
-            }
+            linkInput.select();
+            document.execCommand('copy');
+            alert('تم نسخ الرابط!');
         }
 
-        // معالجة طلبات السحب
         function processWithdraw() {
             const amountInput = document.getElementById('withdraw-amount');
-            if(!amountInput) return;
             const amount = parseFloat(amountInput.value);
-            
-            if(isNaN(amount) || amount <= 0) {
-                alert('يرجى إدخال كمية صحيحة ومقبولة للسحب!');
-                return;
-            }
-            
-            if(withBal >= amount) {
+            if(withBal >= amount && amount > 0) {
                 withBal -= amount;
                 updateDisplay();
                 saveData();
-                amountInput.value = "";
-                alert('تم إرسال طلب السحب الخاص بك لشبكة TON بنجاح ومراجعته يدوياً فوراً!');
+                alert('تم إرسال طلب السحب!');
             } else {
-                alert('رصيدك المتاح الحالي غير كافٍ لإتمام عملية السحب المطلوبة!');
+                alert('رصيد غير كافٍ!');
             }
         }
 
-        // دالة التنقل الاحترافية السلسة والآمنة التي تمنع اختفاء الأزرار السفلية
         function showPage(pageId) {
-            // إخفاء كل الصفحات
             document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
-            // إلغاء تفعيل كل أزرار القائمة
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            
-            // إظهار الصفحة المطلوبة كـ Flex لضمان الاستجابة الكاملة
-            const targetPage = document.getElementById('page-' + pageId);
-            const targetNav = document.getElementById('nav-' + pageId);
-            
-            if (targetPage) targetPage.style.display = 'flex';
-            if (targetNav) targetNav.classList.add('active');
+            document.getElementById('page-' + pageId).style.display = 'flex';
+            document.getElementById('nav-' + pageId).classList.add('active');
         }
 
-        // تشغيل أولي مستقر لتهيئة الكود فور فتحه
         window.onload = function() {
             renderStore();
             updateDisplay();
