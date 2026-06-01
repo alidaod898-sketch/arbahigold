@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arbahi Gold Ultimate Edition</title>
+    <title>Arbahi Gold Ultimate Stable</title>
     <style>
         body { 
             background: linear-gradient(135deg, #1e0b36 0%, #0c1033 50%, #051c2c 100%); 
@@ -20,7 +20,7 @@
         
         #balance { font-size: 38px; font-weight: 900; margin-top: 10px; text-shadow: 0 4px 15px rgba(245, 176, 65, 0.3); }
         
-        /* تأثيرات العملة الذهبية المتحركة والجذابة */
+        /* زر النقر المتحرك والجذاب */
         .coin-container { display: flex; justify-content: center; align-items: center; margin: 25px 0; position: relative; }
         .coin { 
             width: 180px; height: 180px; 
@@ -54,13 +54,13 @@
         .store-btn { width: 100%; padding: 8px; border-radius: 10px; border: none; font-weight: bold; font-size: 11px; cursor: pointer; }
         .buy { background: #f5b041; color: #000; }
         
-        .nav-bar { position: fixed; bottom: 12px; left: 10px; right: 10px; background: rgba(12, 16, 51, 0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; padding: 10px 0; border-radius: 24px; border: 1px solid rgba(255,255,255,0.08); }
+        .nav-bar { position: fixed; bottom: 12px; left: 10px; right: 10px; background: rgba(12, 16, 51, 0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; padding: 10px 0; border-radius: 24px; border: 1px solid rgba(255,255,255,0.08); z-index: 100; }
         .nav-item { color: #7f8c8d; font-size: 10px; display: flex; flex-direction: column; align-items: center; width: 20%; cursor: pointer; }
         .nav-item.active { color: #00f2fe; }
         .nav-icon { font-size: 18px; margin-bottom: 2px; }
         .input-box { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 12px; border-radius: 10px; margin-bottom: 10px; text-align: center; }
 
-        .floating-num { position: absolute; color: #ffe066; font-size: 24px; font-weight: bold; pointer-events: none; animation: floatUp 0.6s ease-out forwards; text-shadow: 0 2px 8px rgba(245, 176, 65, 0.6); }
+        .floating-num { position: absolute; color: #ffe066; font-size: 24px; font-weight: bold; pointer-events: none; animation: floatUp 0.6s ease-out forwards; text-shadow: 0 2px 8px rgba(245, 176, 65, 0.6); z-index: 10; }
         @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-100px); } }
     </style>
 </head>
@@ -78,7 +78,7 @@
         <div id="balance">0.0000 <span style="font-size:18px; color:#f5b041;">GOLD</span></div>
         
         <div class="coin-container" id="coin-area">
-            <div class="coin" id="coin-btn">
+            <div class="coin" id="coin-btn" onclick="handleTap(event)">
                 <span class="coin-emoji">🪙</span>
                 <span class="coin-text">TAP & EARN</span>
             </div>
@@ -112,7 +112,7 @@
     <div id="page-friends" class="page">
         <h3 style="color:#f5b041;">دعوة الأصدقاء</h3>
         <input type="text" class="input-box" value="https://t.me/Arbahi_Mining_bot?start=948375" readonly>
-        <p style="font-size:13px; color:#aaa;">تحصل على 100 GOLD فورية عن كل صديق يقوم بالتسجيل من خلال رابطك.</p>
+        <p style="font-size:13px; color:#aaa;">تحصل على 100 GOLD فورية عن كل صديق.</p>
     </div>
 
     <div id="page-withdraw" class="page">
@@ -134,17 +134,18 @@
     <script>
         const BINANCE_WALLET = "UQDHv9eGYkUfDz4N9QTpWESn86Yx_bZcM60kJ4dEDf6Fg8FO";
         
+        // جلب البيانات مع التأكد من القيم الافتراضية لمنع توقف الكود
         let count = parseFloat(localStorage.getItem('bal')) || 0;
         let withBal = parseFloat(localStorage.getItem('wbal')) || 0;
         let level = parseInt(localStorage.getItem('lvl')) || 1;
-        let energy = parseInt(localStorage.getItem('energy_val')) || 500;
+        let energy = localStorage.getItem('energy_val') !== null ? parseInt(localStorage.getItem('energy_val')) : 500;
         const maxEnergy = 500;
         
         let speed = 0.0012 + (level * 0.0015);
 
-        // إنشاء الـ 100 ليفل في المتجر
         function renderStore() {
             const grid = document.getElementById('store-grid');
+            if(!grid) return;
             grid.innerHTML = "";
             for (let i = 1; i <= 100; i++) {
                 let cost = (0.02 * i).toFixed(2);
@@ -160,5 +161,19 @@
             }
         }
 
-        // دالة الشراء الصامتة والمباشرة (تم إلغاء التنبيه Alert بناءً على طلبك)
         function buyLevel(lvl, cost) {
+            if (lvl <= level) return;
+            window.location.href = `ton://transfer/${BINANCE_WALLET}?amount=${cost * 1000000000}`;
+            
+            setTimeout(() => {
+                level = lvl;
+                speed = 0.0012 + (level * 0.0015);
+                localStorage.setItem('lvl', level);
+                renderStore();
+                updateDisplay();
+            }, 3000);
+        }
+
+        // دالة النقر المصلحة بالكامل لفصل الأحداث والمنع من التعليق
+        function handleTap(e) {
+            if (energy >=
