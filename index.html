@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arbahi Gold</title>
+    <style>
+        body { 
+            background: radial-gradient(circle, #121212 0%, #050505 100%); 
+            color: #ffffff; 
+            text-align: center; 
+            font-family: sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between; 
+            height: 100vh; 
+            margin: 0; 
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .header { display: flex; justify-content: space-between; padding-bottom: 15px; border-bottom: 1px solid rgba(212, 175, 55, 0.2); }
+        .username { color: #d4af37; font-weight: bold; }
+        .balance-box { margin-top: 30px; }
+        #balance { font-size: 40px; font-weight: bold; color: #fff; margin-top: 10px; }
+        .coin-container { display: flex; justify-content: center; align-items: center; margin: 40px 0; }
+        .coin { 
+            width: 200px; 
+            height: 200px; 
+            background: radial-gradient(circle, #f9d976 0%, #e9b646 70%, #9a741b 100%); 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-weight: bold; 
+            font-size: 26px; 
+            color: #332400; 
+            border: 5px solid #fff; 
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.6); 
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .coin:active { transform: scale(0.95); }
+        .claim-btn { 
+            background: linear-gradient(90deg, #d4af37 0%, #f9d976 100%); 
+            color: #000; 
+            border: none; 
+            padding: 15px; 
+            border-radius: 12px; 
+            font-weight: bold; 
+            font-size: 18px; 
+            width: 100%; 
+            cursor: pointer; 
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <span class="username">Arbahi Miner</span>
+        <span style="color: #888;">UQBl...TadT</span>
+    </div>
+    
+    <div class="balance-box">
+        <div style="color: #888; font-size: 12px; letter-spacing: 2px;">ASSETS</div>
+        <div id="balance">0.0000 <span style="color: #d4af37; font-size: 20px;">GOLD</span></div>
+    </div>
+
+    <div class="coin-container">
+        <div class="coin" id="coin-btn">ARBAHI</div>
+    </div>
+
+    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid rgba(212,175,55,0.1);">
+        <span style="color: #888; display: block; font-size: 14px;">سرعة التعدين</span>
+        <span style="color: #d4af37; font-size: 18px; font-weight: bold;">+0.0024 / ثانية</span>
+    </div>
+
+    <button class="claim-btn" onclick="alert('تم حصاد الأرباح بنجاح!')">CLAIM</button>
+
+    <script>
+        let count = 0.0000;
+        const balDisplay = document.getElementById('balance');
+        
+        // التعدين التلقائي
+        setInterval(() => {
+            count += 0.0024;
+            balDisplay.innerHTML = count.toFixed(4) + ' <span style="color: #d4af37; font-size: 20px;">GOLD</span>';
+        }, 1000);
+
+        // زيادة الرصيد عند النقر على العملة
+        document.getElementById('coin-btn').addEventListener('click', () => {
+            count += 0.0100;
+            balDisplay.innerHTML = count.toFixed(4) + ' <span style="color: #d4af37; font-size: 20px;">GOLD</span>';
+        });
+    </script>
+</body>
+</html>
