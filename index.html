@@ -15,7 +15,7 @@
             justify-content: space-between; 
             height: 100vh; 
             margin: 0; 
-            padding: 20px;
+            padding: 20px 20px 80px 20px; /* زيادة الحشوة السفلية لكي لا تغطي القائمة على الأزرار */
             box-sizing: border-box;
             -webkit-user-select: none;
             user-select: none;
@@ -23,27 +23,25 @@
         }
         .header { display: flex; justify-content: space-between; padding-bottom: 15px; border-bottom: 1px solid rgba(212, 175, 55, 0.2); }
         .username { color: #d4af37; font-weight: bold; }
+        
+        /* التحكم في عرض الصفحات */
+        .page { display: none; flex-direction: column; justify-content: space-between; height: 100%; width: 100%; }
+        .page.active { display: flex; }
+
         .balance-box { margin-top: 20px; }
         #balance { font-size: 40px; font-weight: bold; color: #fff; margin-top: 10px; }
         
-        /* منطقة العملة والأرقام الطائرة */
-        .coin-container { 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            margin: 30px 0; 
-            position: relative; 
-        }
+        .coin-container { display: flex; justify-content: center; align-items: center; margin: 30px 0; position: relative; }
         .coin { 
-            width: 200px; 
-            height: 200px; 
+            width: 180px; 
+            height: 180px; 
             background: radial-gradient(circle, #f9d976 0%, #e9b646 70%, #9a741b 100%); 
             border-radius: 50%; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
             font-weight: bold; 
-            font-size: 26px; 
+            font-size: 24px; 
             color: #332400; 
             border: 5px solid #fff; 
             box-shadow: 0 0 30px rgba(212, 175, 55, 0.6); 
@@ -54,84 +52,111 @@
         }
         .coin:active { transform: scale(0.92); }
         
-        /* شريط الطاقة */
-        .energy-box {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            height: 12px;
-            margin-top: 10px;
-            overflow: hidden;
-        }
-        .energy-bar {
-            height: 100%;
-            width: 100%;
-            background: linear-gradient(90deg, #f9d976 0%, #e9b646 100%);
-            transition: width 0.1s ease;
-        }
+        .energy-box { width: 100%; background: rgba(255, 255, 255, 0.1); border-radius: 10px; height: 12px; margin-top: 10px; overflow: hidden; }
+        .energy-bar { height: 100%; width: 100%; background: linear-gradient(90deg, #f9d976 0%, #e9b646 100%); transition: width 0.1s ease; }
+        .claim-btn { background: linear-gradient(90deg, #d4af37 0%, #f9d976 100%); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 18px; width: 100%; cursor: pointer; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3); margin-top: 10px; }
 
-        .claim-btn { 
-            background: linear-gradient(90deg, #d4af37 0%, #f9d976 100%); 
-            color: #000; 
-            border: none; 
-            padding: 15px; 
-            border-radius: 12px; 
-            font-weight: bold; 
-            font-size: 18px; 
-            width: 100%; 
-            cursor: pointer; 
-            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+        /* أسلوب شريط التنقل السفلي الثابت */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #111111;
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 100;
         }
-
-        /* حركة الأرقام الطائرة */
-        .floating-num {
-            position: absolute;
-            color: #f9d976;
-            font-size: 24px;
+        .nav-item {
+            color: #888;
+            cursor: pointer;
+            font-size: 14px;
             font-weight: bold;
-            pointer-events: none;
-            z-index: 10;
-            animation: floatUp 0.6s ease-out forwards;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-target: 1;
         }
-        @keyframes floatUp {
-            0% { opacity: 1; transform: translateY(0) scale(1); }
-            100% { opacity: 0; transform: translateY(-100px) scale(0.8); }
-        }
+        .nav-item.active { color: #f9d976; }
+        .nav-icon { font-size: 20px; margin-bottom: 2px; }
+
+        /* نصوص التوضيح داخل الصفحات الفارغة مؤقتاً */
+        .placeholder-text { margin-top: 100px; color: #888; font-size: 16px; padding: 20px; line-height: 1.6; }
+
+        .floating-num { position: absolute; color: #f9d976; font-size: 24px; font-weight: bold; pointer-events: none; z-index: 10; animation: floatUp 0.6s ease-out forwards; }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-100px) scale(0.8); } }
     </style>
 </head>
 <body>
+
+    <!-- رأس التطبيق الثابت -->
     <div class="header">
         <span class="username">Arbahi Miner</span>
         <span style="color: #888;">UQBl...TadT</span>
     </div>
-    
-    <div class="balance-box">
-        <div style="color: #888; font-size: 12px; letter-spacing: 2px;">ASSETS</div>
-        <div id="balance">0.0000 <span style="color: #d4af37; font-size: 20px;">GOLD</span></div>
+
+    <!-- ================= صفحة التعدين الرئيسية ================= -->
+    <div id="page-mine" class="page active">
+        <div class="balance-box">
+            <div style="color: #888; font-size: 12px; letter-spacing: 2px;">ASSETS</div>
+            <div id="balance">0.0000 <span style="color: #d4af37; font-size: 20px;">GOLD</span></div>
+        </div>
+
+        <div class="coin-container" id="coin-area">
+            <div class="coin" id="coin-btn">ARBAHI</div>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid rgba(212,175,55,0.1);">
+            <div style="display: flex; justify-content: space-between; font-size: 14px;">
+                <span style="color: #888;">⚡ الطاقة المتاحة</span>
+                <span style="color: #fff;" id="energy-text">500/500</span>
+            </div>
+            <div class="energy-box">
+                <div class="energy-bar" id="energy-fill"></div>
+            </div>
+            <div style="margin-top: 10px; font-size: 13px;">
+                <span style="color: #888;">سرعة التعدين:</span>
+                <span style="color: #d4af37; font-weight: bold;">+0.0024 / ثانية</span>
+            </div>
+        </div>
+        <button class="claim-btn" onclick="claimEarnings()">CLAIM</button>
     </div>
 
-    <div class="coin-container" id="coin-area">
-        <div class="coin" id="coin-btn">ARBAHI</div>
-    </div>
-
-    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid rgba(212,175,55,0.1);">
-        <div style="display: flex; justify-content: space-between; font-size: 14px;">
-            <span style="color: #888;">⚡ الطاقة المتاحة</span>
-            <span style="color: #fff;" id="energy-text">500/500</span>
-        </div>
-        <div class="energy-box">
-            <div class="energy-bar" id="energy-fill"></div>
-        </div>
-        <div style="margin-top: 15px; font-size: 14px;">
-            <span style="color: #888;">سرعة التعدين:</span>
-            <span style="color: #d4af37; font-weight: bold;">+0.0024 / ثانية</span>
+    <!-- ================= صفحة المهام (جاري تجهيزها في الخطوة التالية) ================= -->
+    <div id="page-tasks" class="page">
+        <div class="placeholder-text">
+            <h2 style="color: #d4af37;">قسم المهام (Tasks)</h2>
+            <p>هنا ستظهر المهام اليومية للمستخدمين مثل متابعة حساباتك وموقعك لربح عملات إضافية. سنقوم ببرمجتها بالكامل في الخطوة القادمة.</p>
         </div>
     </div>
 
-    <button class="claim-btn" onclick="claimEarnings()">CLAIM</button>
+    <!-- ================= صفحة الأصدقاء (جاري تجهيزها في الخطوات القادمة) ================= -->
+    <div id="page-friends" class="page">
+        <div class="placeholder-text">
+            <h2 style="color: #d4af37;">دعوة الأصدقاء (Referral)</h2>
+            <p>هنا سيتم توليد رابط إحالة مخصص للمستخدم ليقوم بنشره ودعوة أصدقائه والحصول على نسب من تعدينهم.</p>
+        </div>
+    </div>
+
+    <!-- ================= شريط التنقل السفلي الثابت ================= -->
+    <div class="nav-bar">
+        <div class="nav-item active" id="btn-mine" onclick="showPage('mine')">
+            <span class="nav-icon">⛏️</span>
+            <span>تعدين</span>
+        </div>
+        <div class="nav-item" id="btn-tasks" onclick="showPage('tasks')">
+            <span class="nav-icon">📋</span>
+            <span>المهام</span>
+        </div>
+        <div class="nav-item" id="btn-friends" onclick="showPage('friends')">
+            <span class="nav-icon">👥</span>
+            <span>الأصدقاء</span>
+        </div>
+    </div>
 
     <script>
-        // استعادة البيانات من الذاكرة أو تعيين الافتراضية
         let count = parseFloat(localStorage.getItem('arbahi_balance')) || 0.0000;
         let energy = parseInt(localStorage.getItem('arbahi_energy')) || 500;
         const maxEnergy = 500;
@@ -141,31 +166,25 @@
         const energyFill = document.getElementById('energy-fill');
         const coinArea = document.getElementById('coin-area');
 
-        // تحديث الواجهة فوراً عند التحميل
         updateDisplay();
 
-        // التعدين التلقائي وشحن الطاقة (كل ثانية)
+        // التعدين التلقائي وشحن الطاقة
         setInterval(() => {
-            count += 0.0024; // زيادة رصيد التعدين الآلي
-            
+            count += 0.0024;
             if (energy < maxEnergy) {
-                energy += 2; // شحن طاقة تلقائي (+2 طاقة في الثانية)
+                energy += 2;
                 if (energy > maxEnergy) energy = maxEnergy;
             }
-            
             updateDisplay();
             saveToStorage();
         }, 1000);
 
-        // حدث النقر على العملة وتوليد التأثيرات الحركية
+        // النقر على العملة
         document.getElementById('coin-btn').addEventListener('click', (e) => {
             if (energy >= 1) {
-                count += 0.0100; // زيادة الرصيد من النقر
-                energy -= 1;     // استهلاك 1 طاقة
-                
-                // تشغيل الأرقام الطائرة مكان النقرة
+                count += 0.0100;
+                energy -= 1;
                 createFloatingNumber(e);
-                
                 updateDisplay();
                 saveToStorage();
             } else {
@@ -173,37 +192,23 @@
             }
         });
 
-        // دالة إنشاء الأرقام الطائرة
         function createFloatingNumber(e) {
             const num = document.createElement('div');
             num.className = 'floating-num';
             num.innerText = '+0.01';
-            
-            // تحديد موقع النقر بدقة داخل الحاوية
             const rect = coinArea.getBoundingClientRect();
-            let x, y;
-            if(e.clientX) {
-                x = e.clientX - rect.left;
-                y = e.clientY - rect.top;
-            } else { // لدعم شاشات اللمس للهواتف
-                x = rect.width / 2;
-                y = rect.height / 2;
-            }
-            
+            let x = e.clientX ? e.clientX - rect.left : rect.width / 2;
+            let y = e.clientY ? e.clientY - rect.top : rect.height / 2;
             num.style.left = x + 'px';
             num.style.top = y + 'px';
-            
             coinArea.appendChild(num);
-            
-            // مسح العنصر بعد انتهاء الحركة تماماً لتخفيف الحمل
             setTimeout(() => { num.remove(); }, 600);
         }
 
         function updateDisplay() {
             balDisplay.innerHTML = count.toFixed(4) + ' <span style="color: #d4af37; font-size: 20px;">GOLD</span>';
             energyText.innerText = energy + '/' + maxEnergy;
-            const pct = (energy / maxEnergy) * 100;
-            energyFill.style.width = pct + '%';
+            energyFill.style.width = (energy / maxEnergy) * 100 + '%';
         }
 
         function saveToStorage() {
@@ -215,6 +220,18 @@
             if(count > 0) {
                 alert('تم حصاد أرباحك بنجاح! رصيدك الحالي: ' + count.toFixed(4) + ' GOLD');
             }
+        }
+
+        // دالة التنقل السحري بين الصفحات دون إعادة تحميل البوت
+        function showPage(pageId) {
+            // إخفاء جميع الصفحات
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            // إلغاء تفعيل أزرار القائمة
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+
+            // إظهار الصفحة المطلوبة وتفعيل زرها
+            document.getElementById('page-' + pageId).classList.add('active');
+            document.getElementById('btn-' + pageId).classList.add('active');
         }
     </script>
 </body>
