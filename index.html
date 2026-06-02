@@ -93,4 +93,201 @@
                 <span id="energy-text">500/500</span>
             </div>
             <div class="energy-box"><div class="energy-bar" id="energy-fill"></div></div>
-            <p style="font-size:12px; color:#00f2fe; margin: 10px 0 0 0; font-weight: bold;">سرعة التعد
+            <p style="font-size:12px; color:#00f2fe; margin: 10px 0 0 0; font-weight: bold;">سرعة التعدين الحالية: +<span id="speed-display">0.0012</span> / ثانية</p>
+        </div>
+        <button class="claim-btn" onclick="claimEarnings()">CLAIM GOLD</button>
+    </div>
+
+    <div id="page-store" class="page">
+        <h3 style="color:#f5b041; margin: 5px 0 15px 0;">المتجر الذكي (100 ليفل)</h3>
+        <div class="store-grid" id="store-grid"></div>
+    </div>
+
+    <div id="page-tasks" class="page">
+        <h3 style="color:#f5b041; margin: 5px 0 15px 0;">المهام اليومية</h3>
+        
+        <div class="glass-panel" style="text-align: right; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h4 style="margin: 0 0 5px 0; font-size: 15px;">قناة التليجرام الرسمية</h4>
+                <p style="color:#00f2fe; font-size:12px; margin:0;">+50.00 GOLD</p>
+            </div>
+            <button class="store-btn buy" style="width:auto; padding:8px 15px; margin:0;" onclick="window.open('https://t.me/ArbahiMiner', '_blank')">انضم الآن</button>
+        </div>
+        
+        <div class="glass-panel" style="text-align: right; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h4 style="margin: 0 0 5px 0; font-size: 15px;">متابعة حساب تويتر</h4>
+                <p style="color:#00f2fe; font-size:12px; margin:0;">+30.00 GOLD</p>
+            </div>
+            <button class="store-btn buy" style="width:auto; padding:8px 15px; margin:0;" onclick="alert('سيتم التحقق من المهمة قريباً!')">متابعة</button>
+        </div>
+        
+        <div class="glass-panel" style="text-align: right; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h4 style="margin: 0 0 5px 0; font-size: 15px;">قناة اليوتيوب</h4>
+                <p style="color:#00f2fe; font-size:12px; margin:0;">+40.00 GOLD</p>
+            </div>
+            <button class="store-btn buy" style="width:auto; padding:8px 15px; margin:0;" onclick="window.open('رابط_يوتيوب', '_blank')">اشتراك</button>
+        </div>
+        
+        <div class="glass-panel" style="text-align: right; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h4 style="margin: 0 0 5px 0; font-size: 15px;">مدونة بلوجر</h4>
+                <p style="color:#00f2fe; font-size:12px; margin:0;">+20.00 GOLD</p>
+            </div>
+            <button class="store-btn buy" style="width:auto; padding:8px 15px; margin:0;" onclick="window.open('رابط_بلوجر', '_blank')">زيارة</button>
+        </div>
+    </div>
+
+    <div id="page-friends" class="page">
+        <h3 style="color:#f5b041; margin: 5px 0 15px 0;">دعوة الأصدقاء</h3>
+        <div class="glass-panel">
+            <p style="font-size:14px; margin-top: 0; margin-bottom: 15px;">انسخ رابط الإحالة الخاص بك وشاركه مع أصدقائك لزيادة أرباحك:</p>
+            <input type="text" class="input-box" id="ref-link" value="https://t.me/Arbahi_Mining_bot?start=948375" readonly onclick="copyLink()">
+            <p style="font-size:12px; color:#aaa; margin: 0;">🎁 ستحصل على <span style="color: #f5b041; font-weight: bold;">100 GOLD</span> فورية مكافأة عن كل صديق يقوم بالتسجيل.</p>
+        </div>
+    </div>
+
+    <div id="page-withdraw" class="page">
+        <h3 style="color:#f5b041; margin: 5px 0 15px 0;">سحب الأرباح وعمليات TON</h3>
+        <div class="glass-panel">
+            <p style="font-size:14px; color:#aaa; margin-top: 0; margin-bottom:15px;">الحد الأدنى للسحب هو <span style="color: #00f2fe; font-weight: bold;">10.0000 GOLD</span></p>
+            <input type="number" class="input-box" id="withdraw-amount" placeholder="أدخل الكمية المطلوبة بالـ GOLD">
+            <button class="claim-btn" onclick="processWithdraw()">تأكيد السحب الفوري</button>
+        </div>
+    </div>
+
+    <div class="nav-bar">
+        <div class="nav-item active" id="nav-mine" onclick="showPage('mine')"><span class="nav-icon">⛏️</span><span>تعدين</span></div>
+        <div class="nav-item" id="nav-store" onclick="showPage('store')"><span class="nav-icon">⚡</span><span>المتجر</span></div>
+        <div class="nav-item" id="nav-tasks" onclick="showPage('tasks')"><span class="nav-icon">📋</span><span>المهام</span></div>
+        <div class="nav-item" id="nav-friends" onclick="showPage('friends')"><span class="nav-icon">👥</span><span>الأصدقاء</span></div>
+        <div class="nav-item" id="nav-withdraw" onclick="showPage('withdraw')"><span class="nav-icon">💰</span><span>السحب</span></div>
+    </div>
+
+    <script>
+        const BINANCE_WALLET = "UQDHv9eGYkUfDz4N9QTpWESn86Yx_bZcM60kJ4dEDf6Fg8FO";
+        let count = parseFloat(localStorage.getItem('bal')) || 0;
+        let withBal = parseFloat(localStorage.getItem('wbal')) || 0;
+        let level = parseInt(localStorage.getItem('lvl')) || 1;
+        let energy = localStorage.getItem('energy_val') !== null ? parseInt(localStorage.getItem('energy_val')) : 500;
+        const maxEnergy = 500;
+        let speed = 0.0012 + (level * 0.0015);
+
+        function renderStore() {
+            const grid = document.getElementById('store-grid');
+            if (!grid) return;
+            grid.innerHTML = "";
+            for (let i = 1; i <= 100; i++) {
+                let cost = (0.02 * i).toFixed(2);
+                const card = document.createElement('div');
+                card.className = `miner-card ${i === level ? 'active-miner' : ''}`;
+                let btnHtml = i < level ? `<button class="store-btn active-btn">مفعل ✅</button>` : 
+                            (i === level ? `<button class="store-btn active-btn">المستوى الحالي</button>` : 
+                            `<button class="store-btn buy" onclick="buyLevel(${i}, ${cost})">شحن ${cost} TON</button>`);
+                card.innerHTML = `<span class="lvl-tag">Lvl ${i}</span><div style="font-size:26px; margin: 5px 0;">${i > level ? '🔒' : '🧠'}</div><div style="font-size:12px; font-weight:bold; margin-bottom:4px; color:#f5b041;">Matrix ${i}</div>${btnHtml}`;
+                grid.appendChild(card);
+            }
+        }
+
+        function buyLevel(lvl, cost) {
+            if (lvl <= level) return;
+            window.location.href = `ton://transfer/${BINANCE_WALLET}?amount=${cost * 1000000000}`;
+            setTimeout(() => {
+                level = lvl;
+                speed = 0.0012 + (level * 0.0015);
+                localStorage.setItem('lvl', level);
+                renderStore();
+                updateDisplay();
+            }, 3000);
+        }
+
+        document.getElementById('coin-btn').addEventListener('click', function(e) {
+            if (energy >= 1) {
+                count += 0.0100;
+                energy -= 1;
+                createFloatingNumber(e);
+                updateDisplay();
+                saveData();
+            } else {
+                alert("طاقتك الحالية نفدت!");
+            }
+        });
+
+        function createFloatingNumber(e) {
+            const coinArea = document.getElementById('coin-area');
+            const num = document.createElement('div');
+            num.className = 'floating-num';
+            num.innerText = '+0.01';
+            num.style.left = (e.clientX - 20) + 'px';
+            num.style.top = (e.clientY - 20) + 'px';
+            document.body.appendChild(num);
+            setTimeout(() => { num.remove(); }, 600);
+        }
+
+        function updateDisplay() {
+            document.getElementById('balance').innerHTML = count.toFixed(4) + ' <span style="font-size:18px; color:#f5b041;">GOLD</span>';
+            document.getElementById('withdrawable-balance').innerText = withBal.toFixed(4);
+            document.getElementById('energy-text').innerText = `${energy}/${maxEnergy}`;
+            document.getElementById('energy-fill').style.width = (energy / maxEnergy) * 100 + '%';
+            document.getElementById('speed-display').innerText = speed.toFixed(4);
+        }
+
+        function saveData() {
+            localStorage.setItem('bal', count);
+            localStorage.setItem('wbal', withBal);
+            localStorage.setItem('lvl', level);
+            localStorage.setItem('energy_val', energy);
+        }
+
+        setInterval(() => {
+            count += speed; 
+            if (energy < maxEnergy) energy += 1; 
+            updateDisplay();
+            saveData();
+        }, 1000);
+
+        function claimEarnings() {
+            if (count > 0) {
+                withBal += count;
+                count = 0;
+                updateDisplay();
+                saveData();
+                alert('تم الحصاد!');
+            }
+        }
+
+        function copyLink() {
+            const linkInput = document.getElementById('ref-link');
+            linkInput.select();
+            document.execCommand('copy');
+            alert('تم نسخ الرابط!');
+        }
+
+        function processWithdraw() {
+            const amountInput = document.getElementById('withdraw-amount');
+            const amount = parseFloat(amountInput.value);
+            if(withBal >= amount && amount > 0) {
+                withBal -= amount;
+                updateDisplay();
+                saveData();
+                alert('تم إرسال طلب السحب!');
+            } else {
+                alert('رصيد غير كافٍ!');
+            }
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('page-' + pageId).style.display = 'flex';
+            document.getElementById('nav-' + pageId).classList.add('active');
+        }
+
+        window.onload = function() {
+            renderStore();
+            updateDisplay();
+        };
+    </script>
+</body>
+</html>
