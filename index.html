@@ -183,8 +183,8 @@
                 const card = document.createElement('div');
                 card.className = `miner-card ${i === level ? 'active-miner' : ''}`;
                 let btnHtml = i < level ? `<button class="store-btn active-btn">مفعل ✅</button>` : 
-                              (i === level ? `<button class="store-btn active-btn">المستوى الحالي</button>` : 
-                              `<button class="store-btn buy" onclick="buyLevel(${i}, ${cost})">شحن ${cost} TON</button>`);
+                            (i === level ? `<button class="store-btn active-btn">المستوى الحالي</button>` : 
+                            `<button class="store-btn buy" onclick="buyLevel(${i}, ${cost})">شحن ${cost} TON</button>`);
                 card.innerHTML = `<span class="lvl-tag">Lvl ${i}</span><div style="font-size:26px; margin: 5px 0;">${i > level ? '🔒' : '🧠'}</div><div style="font-size:12px; font-weight:bold; margin-bottom:4px; color:#f5b041;">Matrix ${i}</div>${btnHtml}`;
                 grid.appendChild(card);
             }
@@ -240,12 +240,13 @@
             localStorage.setItem('energy_val', energy);
         }
 
+        // تم تغيير الفاصل الزمني من 1000 إلى 3000 لجعل العداد كل 3 ثوانٍ
         setInterval(() => {
             count += speed; 
             if (energy < maxEnergy) energy += 1; 
             updateDisplay();
             saveData();
-        }, 1000);
+        }, 3000);
 
         function claimEarnings() {
             if (count > 0) {
