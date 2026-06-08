@@ -54,7 +54,6 @@
         .store-btn { width: 100%; padding: 10px; border-radius: 10px; border: none; font-weight: bold; font-size: 12px; cursor: pointer; margin-top: 8px; transition: all 0.2s; }
         .buy { background: linear-gradient(135deg, #f5b041, #cf850c); color: #000; box-shadow: 0 3px 10px rgba(245, 176, 65, 0.2); }
         .buy:active { transform: scale(0.95); }
-        .active-btn { background: rgba(255,255,255,0.15); color: #fff; cursor: default; border: 1px solid rgba(255,255,255,0.2); }
         
         .nav-bar { position: fixed; bottom: 12px; left: 10px; right: 10px; background: rgba(12, 16, 51, 0.96); backdrop-filter: blur(12px); display: flex; justify-content: space-around; padding: 12px 0; border-radius: 24px; border: 1px solid rgba(255,255,255,0.08); z-index: 99999; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
         .nav-item { color: #7f8c8d; font-size: 11px; display: flex; flex-direction: column; align-items: center; width: 20%; cursor: pointer; transition: color 0.2s; }
@@ -62,10 +61,6 @@
         .nav-icon { font-size: 20px; margin-bottom: 3px; }
         
         .input-box { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 12px; border-radius: 10px; margin-bottom: 15px; text-align: center; box-sizing: border-box; font-size: 14px; }
-
-        .floating-num { position: absolute; color: #ffe066; font-size: 24px; font-weight: bold; pointer-events: none; animation: floatUp 0.6s ease-out forwards; text-shadow: 0 2px 8px rgba(245, 176, 65, 0.6); z-index: 1000; }
-        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-100px); } }
-        
         .admin-panel { background: #333; padding: 10px; margin-top: 20px; border-radius: 10px; display: none; }
     </style>
 </head>
@@ -124,7 +119,7 @@
     <div id="page-friends" class="page">
         <h3 style="color:#f5b041; margin: 5px 0 15px 0;">دعوة الأصدقاء</h3>
         <div class="glass-panel">
-            <input type="text" class="input-box" id="ref-link" value="https://t.me/Arbahi_Mining_bot?start=948375" readonly onclick="copyLink()">
+            <input type="text" class="input-box" id="ref-link" value="https://t.me/Arbahi_Mining_bot?start=948375" readonly>
         </div>
     </div>
 
@@ -144,6 +139,7 @@
         <div class="nav-item" id="nav-withdraw" onclick="showPage('withdraw')"><span class="nav-icon">💰</span><span>السحب</span></div>
     </div>
 
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
         const BINANCE_WALLET = "UQDHv9eGYkUfDz4N9QTpWESn86Yx_bZcM60kJ4dEDf6Fg8FO";
         let count = parseFloat(localStorage.getItem('bal')) || 0;
@@ -159,23 +155,10 @@
             panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
         }
 
-        function addFunds() {
-            count += 1000;
-            updateDisplay();
-            saveData();
-        }
+        function addFunds() { count += 1000; updateDisplay(); saveData(); }
+        function resetAccount() { localStorage.clear(); location.reload(); }
+        function banAccount() { localStorage.setItem('banned', 'true'); alert('تم حظر المستخدم!'); }
 
-        function resetAccount() {
-            localStorage.clear();
-            location.reload();
-        }
-
-        function banAccount() {
-            localStorage.setItem('banned', 'true');
-            alert('تم حظر المستخدم!');
-        }
-
-        // باقي الدوال كما هي...
         function renderStore() {
             const grid = document.getElementById('store-grid');
             if (!grid) return;
@@ -190,8 +173,13 @@
         }
 
         function buyLevel(lvl, cost) {
-            window.location.href = `ton://transfer/${BINANCE_WALLET}?amount=${cost * 1000000000}`;
-            setTimeout(() => { level = lvl; localStorage.setItem('lvl', level); updateDisplay(); }, 3000);
+            const userId = (window.Telegram && Telegram.WebApp.initDataUnsafe.user) ? Telegram.WebApp.initDataUnsafe.user.id : "Unknown";
+            const nanoTon = BigInt(Math.round(cost * 1000000000));
+            const memo = `Upgrade_to_Lvl_${lvl}_User_${userId}`;
+            const url = `ton://transfer/${BINANCE_WALLET}?amount=${nanoTon}&text=${encodeURIComponent(memo)}`;
+            
+            window.location.href = url;
+            alert("سيتم نقلك لمحفظتك لإتمام الدفع. يرجى إرسال المبلغ والحفاظ على نص الرسالة (Memo) كما هو.");
         }
 
         document.getElementById('coin-btn').addEventListener('click', function(e) {
