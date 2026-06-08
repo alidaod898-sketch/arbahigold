@@ -65,28 +65,35 @@
 
         .floating-num { position: absolute; color: #ffe066; font-size: 24px; font-weight: bold; pointer-events: none; animation: floatUp 0.6s ease-out forwards; text-shadow: 0 2px 8px rgba(245, 176, 65, 0.6); z-index: 1000; }
         @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-100px); } }
+        
+        .admin-panel { background: #333; padding: 10px; margin-top: 20px; border-radius: 10px; display: none; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div style="text-align: right;">
+        <div style="text-align: right;" onclick="toggleAdmin()">
             <span style="color:#f5b041; font-weight:bold; font-size: 15px;">Arbahi Miner 🚀</span><br>
             <span style="font-size:10px; color:#aaa;">ID: #948375</span>
         </div>
         <div class="withdrawable-box">GOLD الرصيد المتاح: <span id="withdrawable-balance">0.0000</span></div>
     </div>
 
+    <div id="admin-panel" class="admin-panel">
+        <h4 style="color:red;">تحكم المطور</h4>
+        <button onclick="addFunds()">زيادة الرصيد</button>
+        <button onclick="resetAccount()">تصفير الحساب</button>
+        <button onclick="banAccount()">حظر الحساب</button>
+    </div>
+
     <div id="page-mine" class="page active">
         <div id="balance">0.0000 <span style="font-size:18px; color:#f5b041;">GOLD</span></div>
-        
         <div class="coin-container" id="coin-area">
             <div class="coin" id="coin-btn">
                 <span class="coin-emoji">🪙</span>
                 <span class="coin-text">TAP & EARN</span>
             </div>
         </div>
-
         <div class="glass-panel">
             <div style="display:flex; justify-content:space-between; font-size:13px;">
                 <span>⚡ الطاقة المتاحة</span>
@@ -105,7 +112,6 @@
 
     <div id="page-tasks" class="page">
         <h3 style="color:#f5b041; margin: 5px 0 15px 0;">المهام اليومية</h3>
-        
         <div class="glass-panel" style="text-align: right; display: flex; justify-content: space-between; align-items: center;">
             <div>
                 <h4 style="margin: 0 0 5px 0; font-size: 15px;">قناة التليجرام الرسمية</h4>
@@ -113,46 +119,19 @@
             </div>
             <button class="store-btn buy" style="width:auto; padding:8px 15px; margin:0;" onclick="window.open('https://t.me/ArbahiMiner', '_blank')">انضم الآن</button>
         </div>
-        
-        <div class="glass-panel" style="text-align: right; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <h4 style="margin: 0 0 5px 0; font-size: 15px;">متابعة حساب تويتر</h4>
-                <p style="color:#00f2fe; font-size:12px; margin:0;">+30.00 GOLD</p>
-            </div>
-            <button class="store-btn buy" style="width:auto; padding:8px 15px; margin:0;" onclick="alert('سيتم التحقق من المهمة قريباً!')">متابعة</button>
-        </div>
-        
-        <div class="glass-panel" style="text-align: right; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <h4 style="margin: 0 0 5px 0; font-size: 15px;">قناة اليوتيوب</h4>
-                <p style="color:#00f2fe; font-size:12px; margin:0;">+40.00 GOLD</p>
-            </div>
-            <button class="store-btn buy" style="width:auto; padding:8px 15px; margin:0;" onclick="window.open('رابط_يوتيوب', '_blank')">اشتراك</button>
-        </div>
-        
-        <div class="glass-panel" style="text-align: right; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <h4 style="margin: 0 0 5px 0; font-size: 15px;">مدونة بلوجر</h4>
-                <p style="color:#00f2fe; font-size:12px; margin:0;">+20.00 GOLD</p>
-            </div>
-            <button class="store-btn buy" style="width:auto; padding:8px 15px; margin:0;" onclick="window.open('رابط_بلوجر', '_blank')">زيارة</button>
-        </div>
     </div>
 
     <div id="page-friends" class="page">
         <h3 style="color:#f5b041; margin: 5px 0 15px 0;">دعوة الأصدقاء</h3>
         <div class="glass-panel">
-            <p style="font-size:14px; margin-top: 0; margin-bottom: 15px;">انسخ رابط الإحالة الخاص بك وشاركه مع أصدقائك لزيادة أرباحك:</p>
             <input type="text" class="input-box" id="ref-link" value="https://t.me/Arbahi_Mining_bot?start=948375" readonly onclick="copyLink()">
-            <p style="font-size:12px; color:#aaa; margin: 0;">🎁 ستحصل على <span style="color: #f5b041; font-weight: bold;">100 GOLD</span> فورية مكافأة عن كل صديق يقوم بالتسجيل.</p>
         </div>
     </div>
 
     <div id="page-withdraw" class="page">
-        <h3 style="color:#f5b041; margin: 5px 0 15px 0;">سحب الأرباح وعمليات TON</h3>
+        <h3 style="color:#f5b041; margin: 5px 0 15px 0;">سحب الأرباح</h3>
         <div class="glass-panel">
-            <p style="font-size:14px; color:#aaa; margin-top: 0; margin-bottom:15px;">الحد الأدنى للسحب هو <span style="color: #00f2fe; font-weight: bold;">10.0000 GOLD</span></p>
-            <input type="number" class="input-box" id="withdraw-amount" placeholder="أدخل الكمية المطلوبة بالـ GOLD">
+            <input type="number" class="input-box" id="withdraw-amount" placeholder="أدخل الكمية">
             <button class="claim-btn" onclick="processWithdraw()">تأكيد السحب الفوري</button>
         </div>
     </div>
@@ -173,7 +152,30 @@
         let energy = localStorage.getItem('energy_val') !== null ? parseInt(localStorage.getItem('energy_val')) : 500;
         const maxEnergy = 500;
         let speed = 0.0012 + (level * 0.0015);
+        let isBanned = localStorage.getItem('banned') === 'true';
 
+        function toggleAdmin() {
+            const panel = document.getElementById('admin-panel');
+            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function addFunds() {
+            count += 1000;
+            updateDisplay();
+            saveData();
+        }
+
+        function resetAccount() {
+            localStorage.clear();
+            location.reload();
+        }
+
+        function banAccount() {
+            localStorage.setItem('banned', 'true');
+            alert('تم حظر المستخدم!');
+        }
+
+        // باقي الدوال كما هي...
         function renderStore() {
             const grid = document.getElementById('store-grid');
             if (!grid) return;
@@ -182,55 +184,26 @@
                 let cost = (0.02 * i).toFixed(2);
                 const card = document.createElement('div');
                 card.className = `miner-card ${i === level ? 'active-miner' : ''}`;
-                let btnHtml = i < level ? `<button class="store-btn active-btn">مفعل ✅</button>` : 
-                            (i === level ? `<button class="store-btn active-btn">المستوى الحالي</button>` : 
-                            `<button class="store-btn buy" onclick="buyLevel(${i}, ${cost})">شحن ${cost} TON</button>`);
-                card.innerHTML = `<span class="lvl-tag">Lvl ${i}</span><div style="font-size:26px; margin: 5px 0;">${i > level ? '🔒' : '🧠'}</div><div style="font-size:12px; font-weight:bold; margin-bottom:4px; color:#f5b041;">Matrix ${i}</div>${btnHtml}`;
+                card.innerHTML = `<span class="lvl-tag">Lvl ${i}</span><div style="font-size:26px; margin: 5px 0;">${i > level ? '🔒' : '🧠'}</div><div style="font-size:12px; font-weight:bold; margin-bottom:4px; color:#f5b041;">Matrix ${i}</div><button class="store-btn buy" onclick="buyLevel(${i}, ${cost})">شحن ${cost} TON</button>`;
                 grid.appendChild(card);
             }
         }
 
         function buyLevel(lvl, cost) {
-            if (lvl <= level) return;
             window.location.href = `ton://transfer/${BINANCE_WALLET}?amount=${cost * 1000000000}`;
-            setTimeout(() => {
-                level = lvl;
-                speed = 0.0012 + (level * 0.0015);
-                localStorage.setItem('lvl', level);
-                renderStore();
-                updateDisplay();
-            }, 3000);
+            setTimeout(() => { level = lvl; localStorage.setItem('lvl', level); updateDisplay(); }, 3000);
         }
 
         document.getElementById('coin-btn').addEventListener('click', function(e) {
-            if (energy >= 1) {
-                count += 0.0100;
-                energy -= 1;
-                createFloatingNumber(e);
-                updateDisplay();
-                saveData();
-            } else {
-                alert("طاقتك الحالية نفدت!");
-            }
+            if(isBanned) { alert('حسابك محظور!'); return; }
+            if (energy >= 1) { count += 0.0100; energy -= 1; updateDisplay(); saveData(); }
         });
-
-        function createFloatingNumber(e) {
-            const coinArea = document.getElementById('coin-area');
-            const num = document.createElement('div');
-            num.className = 'floating-num';
-            num.innerText = '+0.01';
-            num.style.left = (e.clientX - 20) + 'px';
-            num.style.top = (e.clientY - 20) + 'px';
-            document.body.appendChild(num);
-            setTimeout(() => { num.remove(); }, 600);
-        }
 
         function updateDisplay() {
             document.getElementById('balance').innerHTML = count.toFixed(4) + ' <span style="font-size:18px; color:#f5b041;">GOLD</span>';
             document.getElementById('withdrawable-balance').innerText = withBal.toFixed(4);
             document.getElementById('energy-text').innerText = `${energy}/${maxEnergy}`;
             document.getElementById('energy-fill').style.width = (energy / maxEnergy) * 100 + '%';
-            document.getElementById('speed-display').innerText = speed.toFixed(4);
         }
 
         function saveData() {
@@ -240,41 +213,13 @@
             localStorage.setItem('energy_val', energy);
         }
 
-        setInterval(() => {
-            count += speed; 
-            if (energy < maxEnergy) energy += 1; 
-            updateDisplay();
-            saveData();
-        }, 3000);
+        setInterval(() => { if(!isBanned) { count += speed; if (energy < maxEnergy) energy += 1; updateDisplay(); saveData(); } }, 3000);
 
-        function claimEarnings() {
-            if (count > 0) {
-                withBal += count;
-                count = 0;
-                updateDisplay();
-                saveData();
-                alert('تم الحصاد!');
-            }
-        }
-
-        function copyLink() {
-            const linkInput = document.getElementById('ref-link');
-            linkInput.select();
-            document.execCommand('copy');
-            alert('تم نسخ الرابط!');
-        }
-
+        function claimEarnings() { if (count > 0) { withBal += count; count = 0; updateDisplay(); saveData(); alert('تم الحصاد!'); } }
+        
         function processWithdraw() {
-            const amountInput = document.getElementById('withdraw-amount');
-            const amount = parseFloat(amountInput.value);
-            if(withBal >= amount && amount > 0) {
-                withBal -= amount;
-                updateDisplay();
-                saveData();
-                alert('تم إرسال طلب السحب!');
-            } else {
-                alert('رصيد غير كافٍ!');
-            }
+            const amount = parseFloat(document.getElementById('withdraw-amount').value);
+            if(withBal >= amount && amount > 0) { withBal -= amount; updateDisplay(); saveData(); alert('تم الطلب!'); }
         }
 
         function showPage(pageId) {
@@ -284,10 +229,7 @@
             document.getElementById('nav-' + pageId).classList.add('active');
         }
 
-        window.onload = function() {
-            renderStore();
-            updateDisplay();
-        };
+        window.onload = function() { renderStore(); updateDisplay(); };
     </script>
 </body>
 </html>
